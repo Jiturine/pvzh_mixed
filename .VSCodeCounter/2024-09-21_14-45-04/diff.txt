@@ -1,0 +1,37 @@
+Date : 2024-09-21 14:45:04
+Directory : e:\Workspace\pvzh_mixed\Assets\Scripts
+Total : 13 files,  409 codes, 40 comments, 13 blanks, all 462 lines
+
+Languages
++----------+------------+------------+------------+------------+------------+
+| language | files      | code       | comment    | blank      | total      |
++----------+------------+------------+------------+------------+------------+
+| C#       |         13 |        409 |         40 |         13 |        462 |
++----------+------------+------------+------------+------------+------------+
+
+Directories
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                              | files      | code       | comment    | blank      | total      |
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                 |         13 |        409 |         40 |         13 |        462 |
++-------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++-------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| filename                                                          | language | code       | comment    | blank      | total      |
++-------------------------------------------------------------------+----------+------------+------------+------------+------------+
+| e:\Workspace\pvzh_mixed\Assets\Scripts\BattleFieldSceneManager.cs | C#       |         44 |          2 |          3 |         49 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\Card.cs                    | C#       |         -3 |          0 |          0 |         -3 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\CardLibrary.cs             | C#       |         18 |          0 |          0 |         18 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\ColliderManager.cs         | C#       |         77 |          2 |          5 |         84 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\Deck.cs                    | C#       |          7 |          0 |          0 |          7 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\DeckInfo.cs                | C#       |          3 |          0 |          0 |          3 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\Entity.cs                  | C#       |         23 |          0 |          0 |         23 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\GameManager.cs             | C#       |        193 |         34 |          2 |        229 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\HandCards.cs               | C#       |         -3 |          0 |         -1 |         -4 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\Line.cs                    | C#       |          9 |          0 |          1 |         10 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\MyNetworkManager.cs        | C#       |         14 |          2 |          4 |         20 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\NetworkManager.cs          | C#       |        -13 |         -2 |         -4 |        -19 |
+| e:\Workspace\pvzh_mixed\Assets\Scripts\SelectCardSceneManager.cs  | C#       |         40 |          2 |          3 |         45 |
+| Total                                                             |          |        409 |         40 |         13 |        462 |
++-------------------------------------------------------------------+----------+------------+------------+------------+------------+
