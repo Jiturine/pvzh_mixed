@@ -1,0 +1,146 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &5903020155553790213
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3260113368776275004, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4100280917400438628, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 698fe7e55fd35cc4aaa2e2e52c420ab7, type: 3}
+    - target: {fileID: 8709131664726117902, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: a7b7b9d1c523e4646ae0c7931ff6c626, type: 3}
+    - target: {fileID: 9065001541973194103, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      propertyPath: m_Name
+      value: VampireZombie_card
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 6547661578811493955, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9065001541973194103, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -4619847309140255750}
+  m_SourcePrefab: {fileID: 100100000, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+--- !u!1 &3181484525828902002 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9065001541973194103, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+  m_PrefabInstance: {fileID: 5903020155553790213}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-4619847309140255750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3181484525828902002}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9919fee37942014fadd29816a477def, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  name: "\u5438\u8840\u9B3C\u50F5\u5C38"
+  faction: 1
+  tags: 
+  location: 0
+  isSelectable: 0
+  count: 0
+  cost: 3
+  ID: 20002
+  isSelected: 0
+  content: {fileID: 0}
+  costUI: {fileID: 0}
+  healthUI: {fileID: 0}
+  atkUI: {fileID: 0}
+  health: 3
+  maxHealth: 3
+  atk: 2
+  maxAtk: 2
+  curEntity: {fileID: 0}

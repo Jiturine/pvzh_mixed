@@ -1,0 +1,107 @@
+{
+    "10001": {
+        "name": "PeaShooter",
+        "description": "",
+        "isEntity": true
+    },
+    "10002": {
+        "name": "SunFlower",
+        "description": "回合开始：+1<sprite=0>",
+        "isEntity": true
+    },
+    "10003": {
+        "name": "BerryBlast",
+        "description": "对一个僵尸造成3点伤害",
+        "isEntity": false
+    },
+    "10004": {
+        "name": "PeaPod",
+        "description": "回合开始：获得+1<sprite=3>/+1<sprite=2>",
+        "isEntity": true
+    },
+    "10005": {
+        "name": "WallNut",
+        "description": "",
+        "isEntity": true
+    },
+    "10006": {
+        "name": "Cactus",
+        "description": "",
+        "isEntity": true
+    },
+    "10007": {
+        "name": "Spikeweed",
+        "description": "回合结束：对本条线上的僵尸造成2点伤害",
+        "isEntity": false
+    },
+    "10008": {
+        "name": "TorchWood",
+        "description": "身后的豌豆获得+2<sprite=3>",
+        "isEntity": true
+    },
+    "10009": {
+        "name": "Flourish",
+        "description": "抽2张牌",
+        "isEntity": false
+    },
+    "10010": {
+        "name": "Cattail",
+        "description": "",
+        "isEntity": true
+    },
+    "10011": {
+        "name": "CabbagePult",
+        "description": "在高地上打出：获得+1<sprite=3>/+1<sprite=2>",
+        "isEntity": true
+    },
+    "10012": {
+        "name": "SkyShooter",
+        "description": "在高地上打出：获得+2<sprite=3>/+2<sprite=2>",
+        "isEntity": true
+    },
+    "10013": {
+        "name": "Threepeater",
+        "description": "同时攻击自己和相邻线上的僵尸",
+        "isEntity": true
+    },
+    "20001": {
+        "name": "CommonZombie",
+        "description": "",
+        "isEntity": true
+    },
+    "20002": {
+        "name": "VampireZombie",
+        "description": "",
+        "isEntity": true
+    },
+    "20003": {
+        "name": "SumoWrestler",
+        "description": "打出：移动一株植物",
+        "isEntity": true
+    },
+    "20004": {
+        "name": "FunDeadRaiser",
+        "description": "抽2张牌",
+        "isEntity": false
+    },
+    "20005": {
+        "name": "RollingStone",
+        "description": "消灭一株2<sprite=3>及以下的植物",
+        "isEntity": false
+    },
+    "20006": {
+        "name": "Conehead",
+        "description": "",
+        "isEntity": true
+    },
+    "20007": {
+        "name": "TeamMascot",
+        "description": "回合开始：所有运动员获得+1<sprite=3>/+1<sprite=2>",
+        "isEntity": true
+    },
+    "20008": {
+        "name": "DolphinRider",
+        "description": "",
+        "isEntity": true
+    }
+}
