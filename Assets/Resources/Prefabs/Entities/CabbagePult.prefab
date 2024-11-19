@@ -78,11 +78,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8711503950983709014, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 0.64
+      value: 2.12
       objectReference: {fileID: 0}
     - target: {fileID: 8711503950983709014, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 0.64
+      value: 2.34
       objectReference: {fileID: 0}
     - target: {fileID: 8711503950983709014, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
       propertyPath: m_SpriteTilingProperty.adaptiveTilingThreshold
@@ -128,4 +128,5 @@ MonoBehaviour:
   tags: 04000000
   spriteRenderer: {fileID: 0}
   slot: {fileID: 0}
+  className: 
   name: "\u5377\u5FC3\u83DC\u6295\u624B"

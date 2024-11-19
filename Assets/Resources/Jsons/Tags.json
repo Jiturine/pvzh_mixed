@@ -3,7 +3,11 @@
     "Flower": "花朵",
     "Nut": "坚果",
     "Berry": "莓果",
-    "Greenery": "绿叶",
+    "Leafy": "绿叶",
+    "Animal": "动物",
+    "Root": "根茎",
     "Athlete": "运动员",
-    "Pet": "宠物"
+    "Pet": "宠物",
+    "Professional": "职业",
+    "Gourmet": "美食"
 }

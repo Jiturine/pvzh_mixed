@@ -1,20 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using static Game;
 using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static GameManager;
+using UnityEditor.Timeline;
 
 public class EntityCard : Card
 {
+    protected new void Awake()
+    {
+        base.Awake();
+        healthUI = GetComponent<HealthUI>();
+        atkUI = GetComponent<AtkUI>();
+    }
     protected new void Start()
     {
         base.Start();
-        abilities = new List<Ability>();
-        healthUI = GetComponent<HealthUI>();
-        atkUI = GetComponent<AtkUI>();
         healthUI.healthText.text = Health.ToString();
         atkUI.atkText.text = Atk.ToString();
         if (Atk == 0)
@@ -25,16 +31,16 @@ public class EntityCard : Card
         {
             atkUI.ShowAtk();
         }
-        if (gameState == UIState.GamePlay) AIApplicableColliders = ColliderManager.colliders.Where(kvp => kvp.Key / 100 == 2).Select(kvp => kvp.Value).ToList();
     }
+    public override List<Collider2D> AIApplicableColliders => ColliderManager.EnemyColliders;
     protected new void Update()
     {
         base.Update();
-        if (selectedCard == this)
+        if (SelectedCard == this)
         {
             if (curEntity != null)
             {
-                curEntity.transform.position = TranslateScreenToWorld(Input.mousePosition);
+                curEntity.transform.position = Input.mousePosition.TranslateScreenToWorld();
             }
         }
     }
@@ -46,7 +52,7 @@ public class EntityCard : Card
     public int maxHealth;
     public int Health
     {
-        get { return health; }
+        get => health;
         set
         {
             health = value;
@@ -69,7 +75,7 @@ public class EntityCard : Card
     public int maxAtk;
     public int Atk
     {
-        get { return atk; }
+        get => atk;
         set
         {
             atk = value;
@@ -85,6 +91,7 @@ public class EntityCard : Card
             {
                 atkUI.atkText.color = new Color(0.67f, 1.0f, 0.67f); //green
             }
+            atkUI.atkText.text = atk.ToString();
             if (atk == 0)
             {
                 atkUI.HideAtk();
@@ -93,59 +100,63 @@ public class EntityCard : Card
             {
                 atkUI.ShowAtk();
             }
-            atkUI.atkText.text = atk.ToString();
         }
     }
     [HideInInspector] public GameObject curEntity;
+    public override void SetInfo()
+    {
+        base.SetInfo();
+        Health = CardDictionary.cardInfo[ID].health;
+        Atk = CardDictionary.cardInfo[ID].atk;
+        abilities = new List<Ability>();
+        foreach (var abilityName in CardDictionary.cardInfo[ID].abilities)
+        {
+            Ability ability = System.Activator.CreateInstance(System.Type.GetType(abilityName)) as Ability;
+            ability.SetCard(this);
+            abilities.Add(ability);
+        }
+    }
     virtual public Entity CreateEntity(Transform transform)
     {
         Entity entity = Instantiate(CardDictionary.entity[ID], transform.position, Quaternion.identity, transform).GetComponent<Entity>();
-        entity.abilities = new List<Ability>();
-        foreach (Ability ability in abilities)
-        {
-            entity.abilities.Add(ability);
-            ability.SetEntity(entity);
-        }
-        entity.atk = atk;
-        entity.health = health;
-        entity.name = name;
+        entity.SetInfo(this);
         return entity;
     }
     public override bool IsApplicableFor(Collider2D collider)
     {
         if (AllyHero.totalPoint < cost) return false;
-        if (collider.CompareTag("Slot"))
+        if (collider.CompareTag("Pos"))
         {
             Slot slot = collider.GetComponentInParent<Slot>();
-            if (lines[slot.lineIndex].terrain == Line.LineTerrain.Water && !abilities.Any(ability => ability is Amphibious))
+            if (lines[slot.lineIndex].terrain == Line.Terrain.Water && !abilities.Contains<Amphibious>())
             {
                 return false;
             }
-            if (slot.faction == faction)
+            if (slot.Faction == faction)
             {
-                if (!abilities.Any(ability => ability is TeamUp))
+                if (!abilities.Contains<TeamUp>())
                 {
                     if (slot.Empty)
                     {
-                        if (collider == slot.firstCollider) return true;
+                        if (collider == slot.FirstCollider) return true;
                         else return false;
                     }
                     else if (slot.FirstEntity != null && slot.SecondEntity != null) return false;
                     else if (slot.FirstEntity != null)
                     {
-                        if (slot.FirstEntity.abilities.Any(ability => ability is TeamUp)) return true;
+                        if (slot.FirstEntity.abilities.Contains<TeamUp>()) return true;
                         else return false;
                     }
                     else
                     {
-                        if (slot.SecondEntity.abilities.Any(ability => ability is TeamUp)) return true;
+                        if (slot.SecondEntity.abilities.Contains<TeamUp>()) return true;
                         else return false;
                     }
                 }
                 else
                 {
                     if (slot.FirstEntity != null && slot.SecondEntity != null) return false;
-                    else if (slot.Empty && collider == slot.secondCollider) return false;
+                    else if (slot.Empty && collider == slot.SecondCollider) return false;
                     else return true;
                 }
             }
@@ -154,110 +165,38 @@ public class EntityCard : Card
     }
     public override void ApplyFor(Collider2D collider)
     {
-        Slot slot = collider.GetComponentInParent<Slot>();
-        Entity newEntity = CreateEntity(collider.transform);
-        newEntity.slot = slot;
-        if (slot.Empty)
-        {
-            slot.FirstEntity = newEntity;
-        }
-        else if (slot.FirstEntity != null)
-        {
-            if (collider == slot.firstCollider)
-            {
-                slot.SecondEntity = slot.FirstEntity;
-                slot.SecondEntity.transform.SetParent(slot.secondCollider.transform, false);
-                slot.FirstEntity = newEntity;
-            }
-            else
-            {
-                slot.SecondEntity = newEntity;
-            }
-        }
-        else
-        {
-            if (collider == slot.firstCollider)
-            {
-                slot.FirstEntity = newEntity;
-            }
-            else
-            {
-                slot.FirstEntity = slot.SecondEntity;
-                slot.FirstEntity.transform.SetParent(slot.firstCollider.transform, false);
-                slot.SecondEntity = newEntity;
-            }
-        }
+        createdEntity = CreateEntity(collider.transform);
+        GameManager.Instance.PlaceEntity(createdEntity, collider);
         base.ApplyFor(collider);
     }
     public override void OnBeginDrag(PointerEventData eventData)
     {
         if (location == Location.InHandCards)
         {
-            curEntity = Instantiate(CardDictionary.entity[ID]);
-            curEntity.GetComponent<Animator>().enabled = false;
-            curEntity.GetComponent<Collider2D>().enabled = false;
-            curEntity.transform.position = TranslateScreenToWorld(eventData.position);
-            if (selectedCard != null)
-            {
-                if (selectedCard is EntityCard entityCard)
-                {
-                    Destroy(entityCard.curEntity);
-                }
-                selectedCard.isSelected = false;
-            }
-            selectedCard = this;
-            isSelected = true;
+            CreateTempEntity(eventData.position);
+            SelectedCard = this;
         }
     }
     public override void OnDrag(PointerEventData eventData)
     {
         if (location == Location.InHandCards)
         {
-            if (curEntity == null)
-            {
-                return;
-            }
-            curEntity.transform.position = TranslateScreenToWorld(eventData.position);
+            if (curEntity == null) return;
+            curEntity.transform.position = eventData.position.TranslateScreenToWorld();
         }
     }
     public override void OnEndDrag(PointerEventData eventData)
     {
         if (location == Location.InHandCards)
         {
-            if (curEntity == null)
-            {
-                return;
-            }
-            if (turnPhase == TurnPhase.MyTurn)
-            {
-                Collider2D[] hitColliders = Physics2D.OverlapPointAll(TranslateScreenToWorld(eventData.position));
-                foreach (var collider in hitColliders)
-                {
-                    if (IsApplicableFor(collider))
-                    {
-                        if (gameMode == GameMode.Online)
-                        {
-                            GameManager.Instance.ApplyCardServerRpc(myHero.faction, myHandCards.cardList.IndexOf(this), ColliderManager.colliderID[collider]);
-                            if (!needToWait) GameManager.Instance.SwitchPhaseServerRpc();
-                        }
-                        else
-                        {
-                            ApplyFor(collider);
-                            if (!needToWait) GameManager.Instance.SwitchPhase();
-                        }
-                    }
-                }
-            }
-            selectedCard = null;
-            isSelected = false;
-            Destroy(curEntity);
+            if (curEntity != null) Destroy(curEntity);
         }
     }
     public override void OnPointerClick(PointerEventData eventData)
     {
         if ((location == Location.InCardLibrary) && isSelectable)
         {
-            myDeck.Add(this);
+            myDeck.Add(this.ID);
         }
         else if (location == Location.InDeck)
         {
@@ -265,28 +204,40 @@ public class EntityCard : Card
         }
         else if (location == Location.InHandCards)
         {
-            if (selectedCard != null && selectedCard is EntityCard entityCard)
+            if (SelectedCard != this)
             {
-                Destroy(entityCard.curEntity);
-            }
-            if (selectedCard != this)
-            {
-                if (selectedCard != null)
-                {
-                    selectedCard.isSelected = false;
-                }
-                selectedCard = this;
-                isSelected = true;
-                curEntity = Instantiate(CardDictionary.entity[ID]);
-                curEntity.GetComponent<Animator>().enabled = false;
-                curEntity.GetComponent<Collider2D>().enabled = false;
-                curEntity.transform.position = TranslateScreenToWorld(eventData.position);
-            }
-            else
-            {
-                selectedCard = null;
-                isSelected = false;
+                SelectedCard = this;
+                CreateTempEntity(eventData.position);
             }
         }
     }
+    public override void Select()
+    {
+        base.Select();
+        foreach (var position in Game.GetPositions(faction))
+        {
+            if (this.IsApplicableFor(position.collider))
+            {
+                position.ShowApplicablePositon();
+            }
+        }
+    }
+    public override void CencelSelect()
+    {
+        base.CencelSelect();
+        foreach (var position in Game.GetPositions(faction))
+        {
+            position.HideApplicablePosition();
+        }
+    }
+    private void CreateTempEntity(Vector3 position)
+    {
+        curEntity = Instantiate(CardDictionary.entity[ID]);
+        Entity entity = curEntity.GetComponent<Entity>();
+        entity.SetTempInfo(this);
+        curEntity.GetComponent<Animator>().enabled = false;
+        curEntity.GetComponent<Collider2D>().enabled = false;
+        curEntity.transform.position = position.TranslateScreenToWorld();
+    }
+    public Entity createdEntity;
 }

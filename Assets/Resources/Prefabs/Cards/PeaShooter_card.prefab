@@ -128,8 +128,51 @@ PrefabInstance:
       propertyPath: m_Name
       value: PeaShooter_card
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6547661578811493955, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9065001541973194103, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6572442276592775492}
   m_SourcePrefab: {fileID: 100100000, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+--- !u!1 &2704095168089795082 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9065001541973194103, guid: b97e15b4c71af34439a01a11e00d7c48, type: 3}
+  m_PrefabInstance: {fileID: 6362384394547208061}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-6572442276592775492
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2704095168089795082}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 292c04e888eb8664d8d8ca6d898c52aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  className: 
+  name: 
+  faction: 0
+  tags: 
+  location: 0
+  isSelectable: 0
+  count: 0
+  cost: 0
+  ID: 0
+  isSelected: 0
+  content: {fileID: 0}
+  costUI: {fileID: 0}
+  animator: {fileID: 0}
+  needToWait: 0
+  AIApplicableColliders: []
+  healthUI: {fileID: 0}
+  atkUI: {fileID: 0}
+  health: 0
+  maxHealth: 0
+  atk: 0
+  maxAtk: 0
+  curEntity: {fileID: 0}

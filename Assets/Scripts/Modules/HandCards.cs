@@ -1,28 +1,19 @@
 using System.Collections;
 using System.Collections.Generic;
+using static Game;
 using UnityEngine;
 
 public class HandCards : MonoBehaviour
 {
     public Transform contentTransform;
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
     public void Add(Card card)
     {
-        if (GameManager.gameState == GameManager.UIState.GamePlay)
+        if (gameState == GameState.GamePlay)
         {
             GameObject cardPrefab = CardDictionary.card[card.ID];
             GameObject newCardObject = Instantiate(cardPrefab, contentTransform);
             Card newCard = newCardObject.GetComponent<Card>();
+            newCard.SetInfo();
             newCard.location = Card.Location.InHandCards;
             if (cardList == null)
             {
@@ -31,9 +22,26 @@ public class HandCards : MonoBehaviour
             cardList.Add(newCard);
         }
     }
-    public void DrawFrom(Deck deck)
+    public void Add(int ID)
+    {
+        if (gameState == GameState.GamePlay)
+        {
+            GameObject cardPrefab = CardDictionary.card[ID];
+            GameObject newCardObject = Instantiate(cardPrefab, contentTransform);
+            Card newCard = newCardObject.GetComponent<Card>();
+            newCard.SetInfo();
+            newCard.location = Card.Location.InHandCards;
+            if (cardList == null)
+            {
+                cardList = new List<Card>();
+            }
+            cardList.Add(newCard);
+        }
+    }
+    public void DrawFrom(Deck deck, int randomSeed)
     {
         if (deck.cardList.Count == 0) return;
+        Random.InitState(randomSeed);
         int index = Random.Range(0, deck.cardList.Count);
         Card randomCard = deck.cardList[index];
         deck.cardList.RemoveAt(index);

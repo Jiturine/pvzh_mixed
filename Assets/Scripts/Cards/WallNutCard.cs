@@ -4,11 +4,4 @@ using UnityEngine;
 
 public class WallNutCard : EntityCard
 {
-    new void Start()
-    {
-        base.Start();
-        abilities = new List<Ability>(){
-            new TeamUp()
-        };
-    }
 }

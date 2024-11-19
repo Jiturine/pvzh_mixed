@@ -1,12 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using static Game;
 using UnityEngine;
 using static GameManager;
 
 public class EnemyAI : MonoBehaviour
 {
-    private static EnemyAI _instance;
     public static EnemyAI Instance
     {
         get; set;
@@ -22,17 +22,14 @@ public class EnemyAI : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    // Start is called before the first frame update
     void Start()
     {
         hasApplicableCard = true;
         hasReadyToAttackEntity = true;
     }
-
-    // Update is called once per frame
     void Update()
     {
-        if (turnPhase == TurnPhase.EnemyTurn)
+        if (Game.State is EnemyTurnState)
         {
             if (!cooldown)
             {
@@ -49,7 +46,7 @@ public class EnemyAI : MonoBehaviour
                 {
                     decidingAction = false;
                     cooldown = false;
-                    GameManager.Instance.EnemyHeroEndTurn();
+                    ActionSequence.AddAction(new EndTurnAction(enemyHero.faction));
                 }
             }
         }
@@ -61,16 +58,12 @@ public class EnemyAI : MonoBehaviour
         {
             foreach (Card card in enemyHandCards.cardList)
             {
-                Shuffle(card.AIApplicableColliders);
+                card.AIApplicableColliders.Shuffle();
                 foreach (Collider2D collider in card.AIApplicableColliders)
                 {
                     if (card.IsApplicableFor(collider))
                     {
-                        card.ApplyFor(collider);
-                        if (card is EntityCard)
-                        {
-                            GameManager.Instance.SwitchPhase();
-                        }
+                        ActionSequence.AddAction(new ApplyCardAction(card, collider));
                         decidingAction = false;
                         cooldown = false;
                         break;
@@ -85,24 +78,23 @@ public class EnemyAI : MonoBehaviour
         }
         else if (hasReadyToAttackEntity)
         {
-            var entities = GetEnemyEntities();
+            var entities = Game.GetEntities(enemyHero.faction);
             if (entities.Count == 0 && !hasApplicableCard)
             {
                 decidingAction = false;
                 cooldown = false;
-                GameManager.Instance.EnemyHeroEndTurn();
+                GameManager.Instance.EndTurn(enemyHero.faction);
             }
             else
             {
-                Shuffle(entities);
+                entities.Shuffle();
                 foreach (Entity entity in entities)
                 {
                     if (entity.ReadyToAttack)
                     {
-                        entity.Attack();
+                        ActionSequence.AddAction(new AttackAction(entity));
                         decidingAction = false;
                         cooldown = false;
-                        GameManager.Instance.SwitchPhase();
                         break;
                     }
                 }
@@ -117,29 +109,4 @@ public class EnemyAI : MonoBehaviour
     public bool decidingAction;
     public bool hasApplicableCard;
     public bool hasReadyToAttackEntity;
-    public void Shuffle<T>(List<T> list)
-    {
-        if (list.Count == 1) return;
-        for (int i = list.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (list[j], list[i]) = (list[i], list[j]);
-        }
-    }
-    public List<Entity> GetEnemyEntities()
-    {
-        List<Entity> entities = new List<Entity>();
-        foreach (Line line in lines)
-        {
-            if (line.enemySlot.FirstEntity != null)
-            {
-                entities.Add(line.enemySlot.FirstEntity);
-            }
-            if (line.enemySlot.SecondEntity != null)
-            {
-                entities.Add(line.enemySlot.SecondEntity);
-            }
-        }
-        return entities;
-    }
 }

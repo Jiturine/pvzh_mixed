@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Transactions;
+using static Game;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -13,16 +14,17 @@ using Image = UnityEngine.UI.Image;
 
 public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    // Start is called before the first frame update
-    protected void Start()
+    protected void Awake()
     {
-        isSelectable = true;
-        isSelected = false;
         content = transform.Find("mask").transform.Find("content").GetComponent<Image>();
         animator = GetComponent<Animator>();
         costUI = GetComponent<CostUI>();
     }
-    // Update is called once per frame
+    protected void Start()
+    {
+        isSelectable = true;
+        isSelected = false;
+    }
     protected void Update()
     {
         if (costUI == null) return;
@@ -39,7 +41,7 @@ public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHand
     public enum Type
     {
         Entity,
-        Strategy,
+        Trick,
         Environment
     }
     public enum Location
@@ -48,6 +50,7 @@ public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHand
         InDeck,
         InHandCards
     }
+    public string className;
     public new string name;
     public Faction faction;
     public List<Tag> tags;
@@ -70,50 +73,12 @@ public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHand
             Destroy(tempCard.gameObject);
         });
         }
+        GameManager.Instance.OnApplyCard(this);
         AllyHandCards.Remove(this);
     }
-    protected Hero OpponentHero
-    {
-        get
-        {
-            if (faction == myHero.faction)
-            {
-                return enemyHero;
-            }
-            else
-            {
-                return myHero;
-            }
-        }
-    }
-    protected Hero AllyHero
-    {
-        get
-        {
-            if (faction == myHero.faction)
-            {
-                return myHero;
-            }
-            else
-            {
-                return enemyHero;
-            }
-        }
-    }
-    protected HandCards AllyHandCards
-    {
-        get
-        {
-            if (faction == myHero.faction)
-            {
-                return myHandCards;
-            }
-            else
-            {
-                return enemyHandCards;
-            }
-        }
-    }
+    protected Hero OpponentHero => (faction == myHero.faction) ? enemyHero : myHero;
+    protected Hero AllyHero => (faction == myHero.faction) ? myHero : enemyHero;
+    protected HandCards AllyHandCards => (faction == myHero.faction) ? myHandCards : enemyHandCards;
     [HideInInspector] public int count;
     public int cost;
     public int ID;
@@ -123,69 +88,27 @@ public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHand
     [HideInInspector] public Animator animator;
     [HideInInspector] public bool needToWait;
 
-    public static Vector3 TranslateScreenToWorld(Vector3 position)
-    {
-        Vector3 cameraTranslatePos = Camera.main.ScreenToWorldPoint(position);
-        return new Vector3(cameraTranslatePos.x, cameraTranslatePos.y, 0);
-    }
     virtual public void OnBeginDrag(PointerEventData eventData)
     {
         if (location == Location.InHandCards)
         {
-            if (selectedCard != null)
-            {
-                selectedCard.isSelected = false;
-            }
-            selectedCard = this;
-            isSelected = true;
+            SelectedCard = this;
         }
     }
     virtual public void OnDrag(PointerEventData eventData)
     {
-        if (location == Location.InHandCards)
-        {
-        }
+
     }
     virtual public void OnEndDrag(PointerEventData eventData)
     {
-        if (location == Location.InHandCards)
-        {
-            if (turnPhase == TurnPhase.MyTurn)
-            {
-                Collider2D[] hitColliders = Physics2D.OverlapPointAll(TranslateScreenToWorld(eventData.position));
-                foreach (var collider in hitColliders)
-                {
-                    if (IsApplicableFor(collider))
-                    {
-                        if (gameMode == GameMode.Online)
-                        {
-                            GameManager.Instance.ApplyCardServerRpc(myHero.faction, myHandCards.cardList.IndexOf(this), ColliderManager.colliderID[collider]);
-                            if (this is EntityCard)
-                            {
-                                if (!needToWait) GameManager.Instance.SwitchPhaseServerRpc();
-                            }
-                        }
-                        else
-                        {
-                            ApplyFor(collider);
-                            if (this is EntityCard)
-                            {
-                                if (!needToWait) GameManager.Instance.SwitchPhase();
-                            }
-                        }
-                    }
-                }
-            }
-            selectedCard = null;
-            isSelected = false;
-        }
+
     }
 
     virtual public void OnPointerClick(PointerEventData eventData)
     {
         if ((location == Location.InCardLibrary) && isSelectable)
         {
-            myDeck.Add(this);
+            myDeck.Add(this.ID);
         }
         else if (location == Location.InDeck)
         {
@@ -193,36 +116,49 @@ public class Card : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHand
         }
         else if (location == Location.InHandCards)
         {
-            if (selectedCard != null && selectedCard is EntityCard entityCard)
+            if (SelectedCard != this)
             {
-                Destroy(entityCard.curEntity);
-            }
-            if (selectedCard != this)
-            {
-                if (selectedCard != null)
-                {
-                    selectedCard.isSelected = false;
-                }
-                selectedCard = this;
-                isSelected = true;
-            }
-            else
-            {
-                selectedCard = null;
-                isSelected = false;
+                SelectedCard = this;
             }
         }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Tooltip.Instance.ShowCard(this);
+        var tooltipPanel = UIManager.Instance.TryOpenPanel<TooltipPanel>();
+        tooltipPanel.ShowCard(this);
         transform.localScale = new Vector3(1.1f, 1.1f, 1.1f);
     }
     public void OnPointerExit(PointerEventData eventData)
     {
         transform.localScale = Vector3.one;
-        Tooltip.Instance.gameObject.SetActive(false);
+        UIManager.Instance.TryClosePanel<TooltipPanel>();
     }
-    [HideInInspector] public List<Collider2D> AIApplicableColliders;
+    virtual public void SetInfo()
+    {
+        string cardName = GetType().Name;
+        string trueName;
+        if (cardName.EndsWith("Card"))
+        {
+            trueName = cardName.Substring(0, cardName.Length - 4);
+        }
+        else
+        {
+            trueName = cardName;
+        }
+        ID = CardDictionary.cardID[trueName];
+        faction = (ID / 10000 == 1) ? Faction.Plant : Faction.Zombie;
+        name = CardDictionary.cardInfo[ID].name;
+        tags = CardDictionary.cardInfo[ID].tags;
+        cost = CardDictionary.cardInfo[ID].cost;
+    }
+    virtual public void Select()
+    {
+        isSelected = true;
+    }
+    virtual public void CencelSelect()
+    {
+        isSelected = false;
+    }
+    [HideInInspector] virtual public List<Collider2D> AIApplicableColliders { get; }
 }

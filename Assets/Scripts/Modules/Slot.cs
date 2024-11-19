@@ -1,93 +1,88 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using static Game;
 using UnityEngine;
 using static GameManager;
+using System.Linq;
 
 public class Slot : MonoBehaviour
 {
     public Faction faction;
-    public Entity[] entities;
-    public Collider2D firstCollider;
-    public Collider2D secondCollider;
+    public Faction Faction
+    {
+        get => faction;
+        set
+        {
+            faction = value;
+            positions[0].faction = value;
+            positions[1].faction = value;
+        }
+    }
+    public Position[] positions;
+    public Collider2D FirstCollider
+    {
+        get => positions[0].collider;
+        set => positions[0].collider = value;
+    }
+    public Collider2D SecondCollider
+    {
+        get => positions[1].collider;
+        set => positions[1].collider = value;
+    }
+    public List<Collider2D> Colliders => positions.Select(position => position.collider).ToList();
     public int lineIndex;
     public Entity FirstEntity
     {
-        get
-        {
-            return entities[0];
-        }
-        set
-        {
-            entities[0] = value;
-        }
+        get => positions[0].entity;
+        set => positions[0].entity = value;
     }
     public Entity SecondEntity
     {
-        get
-        {
-            return entities[1];
-        }
-        set
-        {
-            entities[1] = value;
-        }
+        get => positions[1].entity;
+        set => positions[1].entity = value;
     }
-    public Entity FrontEntity
-    {
-        get
-        {
-            if (entities[1] != null)
-            {
-                return entities[1];
-            }
-            else if (entities[0] != null)
-            {
-                return entities[0];
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-    }
-    public Slot OpponentSlot
-    {
-        get
-        {
-            if (faction == myHero.faction)
-            {
-                return lines[lineIndex].enemySlot;
-            }
-            else
-            {
-                return lines[lineIndex].mySlot;
-            }
-        }
-    }
+    public List<Entity> Entities => positions.Select(position => position.entity).Where(entity => entity != null).ToList();
+    public Entity FrontEntity => (SecondEntity != null) ? SecondEntity : (FirstEntity != null) ? FirstEntity : null;
+    public Slot OpponentSlot => (faction == myHero.faction) ? lines[lineIndex].enemySlot : lines[lineIndex].mySlot;
+    public Line Line => lines[lineIndex];
     public void RemoveEntity(Entity entity)
     {
-        if (entities[0] == entity)
+        if (FirstEntity == entity)
         {
-            entities[0] = null;
+            FirstEntity = null;
         }
-        else if (entities[1] == entity)
+        else if (SecondEntity == entity)
         {
-            entities[1] = null;
+            SecondEntity = null;
         }
         else
         {
             Debug.LogError("Entity Remove Failed!");
         }
     }
+    public int GetPosID(Entity entity)
+    {
+        if (FirstEntity == entity)
+        {
+            return 1;
+        }
+        else if (SecondEntity == entity)
+        {
+            return 2;
+        }
+        else
+        {
+            return -1;
+        }
+    }
     public Entity GetEntity(Collider2D collider)
     {
-        if (collider == firstCollider)
+        if (collider == FirstCollider)
         {
             return FirstEntity;
         }
-        else if (collider == secondCollider)
+        else if (collider == SecondCollider)
         {
             return SecondEntity;
         }
@@ -97,15 +92,27 @@ public class Slot : MonoBehaviour
             return null;
         }
     }
+    public Position GetPosition(Entity entity)
+    {
+        if (entity == FirstEntity)
+        {
+            return positions[0];
+        }
+        else if (entity == SecondEntity)
+        {
+            return positions[1];
+        }
+        else return null;
+    }
     public Collider2D GetCollider(Entity entity)
     {
         if (entity == FirstEntity)
         {
-            return firstCollider;
+            return FirstCollider;
         }
         else if (entity == SecondEntity)
         {
-            return secondCollider;
+            return SecondCollider;
         }
         else
         {
@@ -113,35 +120,5 @@ public class Slot : MonoBehaviour
             return null;
         }
     }
-    public void SetEntity(Collider2D collider, Entity entity)
-    {
-        if (collider == firstCollider)
-        {
-            FirstEntity = entity;
-        }
-        else if (collider == secondCollider)
-        {
-            SecondEntity = entity;
-        }
-    }
-    public bool Empty
-    {
-        get
-        {
-            return entities[0] == null && entities[1] == null;
-        }
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-        entities = new Entity[2];
-        firstCollider = transform.Find("First Pos").GetComponent<Collider2D>();
-        secondCollider = transform.Find("Second Pos").GetComponent<Collider2D>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
+    public bool Empty => FirstEntity == null && SecondEntity == null;
 }

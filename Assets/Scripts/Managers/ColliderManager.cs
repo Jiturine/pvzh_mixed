@@ -1,12 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using static Game;
 using UnityEngine;
 using UnityEngine.UI;
 using static GameManager;
+using System.Linq;
 
 public class ColliderManager : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
         colliders = new Dictionary<int, Collider2D>();
@@ -69,16 +70,14 @@ public class ColliderManager : MonoBehaviour
             colliderID.Add(line.lineCollider, 300 + i);
         }
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
     static public Dictionary<int, Collider2D> colliders;
     static public Dictionary<Collider2D, int> colliderID;
     static public int GetColliderPos(Collider2D collider)
     {
         return colliderID[collider] % 10 - 1;
     }
+    static public List<Collider2D> EnemyColliders => colliders.Where(kvp => kvp.Key / 100 == 2).Select(kvp => kvp.Value).ToList();
+    static public List<Collider2D> MyColliders => colliders.Where(kvp => kvp.Key / 100 == 1).Select(kvp => kvp.Value).ToList();
+    static public List<Collider2D> LineColliders => colliders.Where(kvp => kvp.Key / 100 == 3).Select(kvp => kvp.Value).ToList();
+    static public List<Collider2D> AllColliders => colliders.Select(kvp => kvp.Value).ToList();
 }

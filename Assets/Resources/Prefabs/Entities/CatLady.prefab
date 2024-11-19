@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &6360929666253097695
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3397283112244756683, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_Name
+      value: CatLady
+      objectReference: {fileID: 0}
+    - target: {fileID: 6195423223165525799, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: dee58698247582842b07ee2a39a80fc5, type: 3}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8030433112385728227, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711503950983709014, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.x
+      value: 2.63
+      objectReference: {fileID: 0}
+    - target: {fileID: 8711503950983709014, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      propertyPath: m_SpriteTilingProperty.oldSize.y
+      value: 2.88
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 5822955026387531423, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3397283112244756683, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -8650942057666326808}
+  m_SourcePrefab: {fileID: 100100000, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+--- !u!1 &8602751778838727188 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3397283112244756683, guid: f1b4227752b895e41837392e6a8a08a1, type: 3}
+  m_PrefabInstance: {fileID: 6360929666253097695}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &-8650942057666326808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8602751778838727188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42b814d544e036f46aeb30c510a0e3dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  readyToAttack: 0
+  health: 0
+  maxHealth: 0
+  atk: 0
+  maxAtk: 0
+  ID: 0
+  counterAttackCount: 0
+  healthRenderer: {fileID: 0}
+  atkRenderer: {fileID: 0}
+  animator: {fileID: 0}
+  faction: 0
+  tags: 
+  spriteRenderer: {fileID: 0}
+  slot: {fileID: 0}
+  className: 
+  name: 

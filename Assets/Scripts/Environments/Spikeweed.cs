@@ -1,11 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static GameManager;
+using static Game;
 
 public class Spikeweed : Environment
 {
-    // Start is called before the first frame update
     new void Start()
     {
         base.Start();
@@ -19,17 +18,11 @@ public class Spikeweed : Environment
     public void DoDamage()
     {
         Slot slot = lines[lineIndex].GetOpponentSlot(faction);
-        if (!slot.Empty)
+        foreach (Entity entity in slot.Entities)
         {
-            foreach (Entity entity in slot.entities)
-            {
-                if (entity != null)
-                {
-                    entity.TakeDamage(2);
-                }
-            }
-            GameManager.Instance.CheckDieEntity();
+            entity.TakeDamage(2);
         }
+        GameManager.Instance.CheckDieEntity();
     }
-
 }
+

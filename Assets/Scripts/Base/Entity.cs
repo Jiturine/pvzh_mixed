@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEditor;
@@ -8,11 +9,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using static GameManager;
+using static Game;
 using Image = UnityEngine.UI.Image;
 using Random = UnityEngine.Random;
+using System.Threading.Tasks;
+using System.Numerics;
+using Vector3 = UnityEngine.Vector3;
+using UnityEngine.UIElements;
 
-[Serializable]
-public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+public class Entity : Interactable
 {
     protected void Awake()
     {
@@ -20,41 +25,38 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
         healthRenderer = GetComponent<HealthRenderer>();
         atkRenderer = GetComponent<AtkRenderer>();
         animator = GetComponent<Animator>();
+        applicableIndicator = transform.Find("applicableIndicator").GetComponent<SpriteRenderer>();
+        material = spriteRenderer.material;
     }
-    // Start is called before the first frame update
     protected void Start()
     {
-        if (abilities == null) abilities = new List<Ability>();
-        healthRenderer.healthText.text = Health.ToString();
-        atkRenderer.atkText.text = Atk.ToString();
-        if (Atk == 0 || abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false))
+        if (!abilities.Contains<Charge>())
         {
-            atkRenderer.HideAtk();
+            ReadyToAttack = false;
         }
-        else
+        if (Atk != 0)
         {
-            atkRenderer.ShowAtk();
             counterAttackCount = 1;
         }
     }
-
-    // Update is called once per frame
     protected void Update()
     {
         OnUpdate?.Invoke();
     }
-
-    public void Battlecry()
+    virtual public void Place()
     {
-        BattlecryManager.Instance.isBattlecrying = true;
-        BattlecryEvent?.Invoke();
+        if (!abilities.Contains<Gravestone>() && HasBattlecry)
+        {
+            ActionSequence.AddAction(new BattlecryAction(this));
+        }
     }
 
+    virtual public void Battlecry() { }
     virtual public void CounterAttack()
     {
-        if (abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false)) return;
+        if (abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false) return;
         counterAttackCount--;
-        SetAttackAnimation(true);
+        SetAttackAnimation();
         Timer.Register(0.5f, () =>
     {
         if (!slot.OpponentSlot.Empty)
@@ -64,7 +66,7 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
         }
         else
         {
-            if (!abilities.Any(ability => ability is Bullseye))
+            if (!abilities.Contains<Bullseye>())
             {
                 int increaseShield = Random.Range(1, 4);
                 if (increaseShield + OpponentHero.Shield >= 10)
@@ -82,19 +84,16 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
                 DoDamage(OpponentHero, atk);
             }
         }
-        SetAttackAnimation(false);
     });
     }
     virtual public void Attack()
     {
         ReadyToAttack = false;
-        SetAttackAnimation(true);
-        if (!slot.OpponentSlot.Empty && slot.OpponentSlot.FrontEntity.abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false))
+        SetAttackAnimation();
+        Debug.Log($" {slot.OpponentSlot == null} {slot.OpponentSlot.FrontEntity == null}");
+        if (!slot.OpponentSlot.Empty && slot.OpponentSlot.FrontEntity.abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
         {
-            Timer.Register(0.5f, () =>
-            {
-                SetAttackAnimation(false);
-            });
+            return;
         }
         else
         {
@@ -104,14 +103,14 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
             {
                 Entity attackEntity = slot.OpponentSlot.FrontEntity;
                 DoDamage(attackEntity, atk);
-                if (attackEntity.counterAttackCount > 0 && !abilities.Any(ability => ability is NoCounterAttack))
+                if (attackEntity.counterAttackCount > 0 && !abilities.Contains<NoCounterAttack>())
                 {
                     attackEntity.CounterAttack();
                 }
             }
             else
             {
-                if (!abilities.Any(ability => ability is Bullseye))
+                if (!abilities.Contains<Bullseye>())
                 {
                     int increaseShield = Random.Range(1, 4);
                     if (increaseShield + OpponentHero.Shield >= 10)
@@ -129,7 +128,6 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
                     DoDamage(OpponentHero, atk);
                 }
             }
-            SetAttackAnimation(false);
         });
         }
     }
@@ -145,22 +143,23 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
     }
     virtual public int TakeDamage(int damage)
     {
-        if (abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false)) return 0;
-        if (abilities.Any(ability => ability is Armored))
+        if (abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false) return 0;
+        if (abilities.Contains<Armored>(out var armored))
         {
-            Armored armored = (Armored)abilities.Find(ability => ability is Armored);
             damage -= armored.shield;
             if (damage < 0) damage = 0;
         }
         if (Health >= damage)
         {
             Health -= damage;
+            OnTakeDamageEvent?.Invoke(damage);
             return damage;
         }
         else
         {
             int tempHP = Health;
             Health = 0;
+            OnTakeDamageEvent?.Invoke(tempHP);
             return tempHP;
         }
     }
@@ -176,113 +175,188 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
             Health += hp;
         }
     }
-    public bool IsDying
+    virtual public bool IsAbleToMoveTo(Collider2D collider)
     {
-        get
+        Slot targetSlot = collider.GetComponentInParent<Slot>();
+        //移到水路，要有两栖异能
+        if (targetSlot.Line.terrain == Line.Terrain.Water && !this.abilities.Contains<Amphibious>())
         {
-            return Health == 0;
+            return false;
+        }
+        //本格前后两单位交换
+        if (targetSlot == this.slot)
+        {
+            return targetSlot.GetEntity(collider) != this && targetSlot.GetEntity(collider) != null;
+        }
+        //目标格空则只能移到后位
+        if (targetSlot.Empty)
+        {
+            if (collider == targetSlot.FirstCollider) return true;
+            else return false;
+        }
+        //目标格两位置都满则不能移
+        else if (targetSlot.FirstEntity != null && targetSlot.SecondEntity != null) return false;
+        //一位置空，有组队可以移
+        else if (this.abilities.Contains<TeamUp>()) return true;
+        //一位置空，无组队，看另一单位是否组队
+        else
+        {
+            if (targetSlot.FirstEntity != null)
+            {
+                if (targetSlot.FirstEntity.abilities.Contains<TeamUp>()) return true;
+                else return false;
+            }
+            else
+            {
+                if (targetSlot.SecondEntity.abilities.Contains<TeamUp>()) return true;
+                else return false;
+            }
         }
     }
+    virtual public void MoveTo(Collider2D collider)
+    {
+        var originalPosition = transform.position;
+        Slot targetSlot = collider.GetComponentInParent<Slot>();
+        //本格前后两单位交换
+        if (targetSlot == this.slot)
+        {
+            Entity anotherEntity = targetSlot.GetEntity(collider);
+            anotherEntity.transform.SetParent(targetSlot.GetCollider(this).transform);
+            this.transform.SetParent(collider.transform);
+            (targetSlot.SecondEntity, targetSlot.FirstEntity) = (targetSlot.FirstEntity, targetSlot.SecondEntity);
+        }
+        else
+        {
+            if (targetSlot.Empty)
+            {
+                this.slot.RemoveEntity(this);
+                this.slot = targetSlot;
+                this.transform.SetParent(collider.transform);
+                targetSlot.FirstEntity = this;
+            }
+            else if (targetSlot.FirstEntity != null)
+            {
+                if (collider == targetSlot.FirstCollider)
+                {
+                    targetSlot.SecondEntity = targetSlot.FirstEntity;
+                    targetSlot.SecondEntity.transform.SetParent(targetSlot.SecondCollider.transform);
+                    this.slot.RemoveEntity(this);
+                    this.slot = targetSlot;
+                    this.transform.SetParent(collider.transform);
+                    targetSlot.FirstEntity = this;
+                }
+                else
+                {
+                    this.slot.RemoveEntity(this);
+                    this.slot = targetSlot;
+                    this.transform.SetParent(collider.transform);
+                    targetSlot.SecondEntity = this;
+                }
+            }
+            else
+            {
+                if (collider == targetSlot.SecondCollider)
+                {
+                    targetSlot.FirstEntity = targetSlot.SecondEntity;
+                    targetSlot.FirstEntity.transform.SetParent(targetSlot.FirstCollider.transform);
+                    this.slot.RemoveEntity(this);
+                    this.slot = targetSlot;
+                    this.transform.SetParent(collider.transform);
+                    targetSlot.SecondEntity = this;
+                }
+                else
+                {
+                    this.slot.RemoveEntity(this);
+                    this.slot = targetSlot;
+                    this.transform.SetParent(collider.transform);
+                    targetSlot.FirstEntity = this;
+                }
+            }
+        }
+        Debug.Log($"original position:{originalPosition} transform.position : {transform.position}");
+        transform.position = originalPosition;
+        StartCoroutine(MoveTowards(Pos.transform.position));
+    }
+    public bool IsDying => Health == 0;
     virtual public void Die()
     {
-        slot.RemoveEntity(this);
-        Destroy(gameObject);
+        Exit();
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    virtual public void Bounce()
     {
-        if (abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false))
+        Exit();
+        GameManager.Instance.GetHandCards(faction).Add(ID);
+    }
+    virtual public void Exit()
+    {
+        slot.RemoveEntity(this);
+        foreach (Ability ability in abilities)
+        {
+            ability.Remove();
+        }
+        Destroy(gameObject);
+    }
+    override public void OnPointerUp()
+    {
+        if (SelectedCard != null) return;
+        if (abilities.Contains<Gravestone>(out var gravestone) && !gravestone.outOfGrave)
         {
             return;
         }
-        if (turnPhase == TurnPhase.MyTurn && faction == myHero.faction && ReadyToAttack)
+        if (Game.State is MyTurnState && faction == myHero.faction && ReadyToAttack)
         {
-            if (gameMode == GameMode.Online)
-            {
-                int posID = (slot.FirstEntity == this) ? 0 : 1;
-                GameManager.Instance.EntityAttackServerRpc(faction, slot.lineIndex, posID);
-                GameManager.Instance.SwitchPhaseServerRpc();
-            }
-            else
-            {
-                Attack();
-                GameManager.Instance.SwitchPhase();
-            }
+            ActionSequence.AddAction(new AttackAction(this));
         }
     }
 
-    public void OnPointerEnter(PointerEventData eventData)
+    override public void OnPointerEnter()
     {
-        Tooltip.Instance.ShowEntity(this);
+        var panel = UIManager.Instance.TryOpenPanel<TooltipPanel>();
+        panel.ShowEntity(this);
+        if (applicableIndicator.enabled)
+        {
+            applicableIndicator.color = Color.green;
+        }
     }
 
-    public void OnPointerExit(PointerEventData eventData)
+    override public void OnPointerExit()
     {
-        Tooltip.Instance.gameObject.SetActive(false);
+        UIManager.Instance.TryClosePanel<TooltipPanel>();
+        if (applicableIndicator.enabled)
+        {
+            applicableIndicator.color = Color.white;
+        }
     }
 
-    protected void SetAttackAnimation(bool trigger)
+    protected void SetAttackAnimation()
     {
-        if (trigger)
-        {
-            playingAnimationCounter++;
-        }
-        else
-        {
-            playingAnimationCounter--;
-        }
         if (faction == myHero.faction)
         {
-            animator.SetBool("AttackUp", trigger);
+            animator.Play("AttackUp");
         }
         else
         {
-            animator.SetBool("AttackDown", trigger);
+            animator.Play("AttackDown");
         }
     }
 
-    protected Hero OpponentHero
-    {
-        get
-        {
-            if (faction == myHero.faction)
-            {
-                return enemyHero;
-            }
-            else
-            {
-                return myHero;
-            }
-        }
-    }
-    protected Hero AllyHero
-    {
-        get
-        {
-            if (faction == myHero.faction)
-            {
-                return myHero;
-            }
-            else
-            {
-                return enemyHero;
-            }
-        }
-    }
+    protected Hero OpponentHero => (faction == myHero.faction) ? enemyHero : myHero;
+    protected Hero AllyHero => (faction == myHero.faction) ? myHero : enemyHero;
     [HideInInspector] public bool readyToAttack;
     public bool ReadyToAttack
     {
-        get { return readyToAttack; }
+        get => readyToAttack;
         set
         {
             readyToAttack = value;
-            if (readyToAttack && !abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false))
+            if (readyToAttack && !(abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false))
             {
-                spriteRenderer.color = Color.green;
+                material.SetInt("_Enable", 1);
             }
             else
             {
-                spriteRenderer.color = Color.white;
+                material.SetInt("_Enable", 0);
             }
         }
     }
@@ -290,7 +364,7 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
     public int maxHealth;
     public int Health
     {
-        get { return health; }
+        get => health;
         set
         {
             health = value;
@@ -314,11 +388,10 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
     public int maxAtk;
     public int Atk
     {
-        get { return atk; }
+        get => atk;
         set
         {
             atk = value;
-
             if (atk < maxAtk)
             {
                 atkRenderer.atkText.color = new Color(1.0f, 0.67f, 0.67f); // pink
@@ -331,7 +404,7 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
             {
                 atkRenderer.atkText.color = new Color(0.67f, 1.0f, 0.67f); //green
             }
-            if (atk == 0 || abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false))
+            if (atk == 0)
             {
                 atkRenderer.HideAtk();
             }
@@ -339,13 +412,100 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
             {
                 atkRenderer.ShowAtk();
             }
+            if (abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
+            {
+                atkRenderer.HideAtk();
+                healthRenderer.HideHealth();
+            }
             atkRenderer.atkText.text = atk.ToString();
-            atkRenderer.AtkShake();
+            if (atk != 0) atkRenderer.AtkShake();
+        }
+    }
+    public void SetInfo()
+    {
+        ID = CardDictionary.entityID[GetType().Name];
+        faction = (ID / 10000 == 1) ? Faction.Plant : Faction.Zombie;
+        name = CardDictionary.cardInfo[ID].name;
+        tags = CardDictionary.cardInfo[ID].tags;
+        health = CardDictionary.cardInfo[ID].health;
+        maxHealth = health;
+        atk = CardDictionary.cardInfo[ID].atk;
+        maxAtk = atk;
+        healthRenderer.healthText.text = health.ToString();
+        atkRenderer.atkText.text = atk.ToString();
+        abilities = new List<Ability>();
+        foreach (var abilityName in CardDictionary.cardInfo[ID].abilities)
+        {
+            abilities.Add(System.Activator.CreateInstance(System.Type.GetType(abilityName), this) as Ability);
+        }
+        if (atk == 0 || abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
+        {
+            atkRenderer.HideAtk();
+        }
+    }
+    public void SetInfo(EntityCard entityCard)
+    {
+        ID = entityCard.ID;
+        faction = (ID / 10000 == 1) ? Faction.Plant : Faction.Zombie;
+        name = entityCard.name;
+        tags = entityCard.tags;
+        health = entityCard.health;
+        maxHealth = health;
+        atk = entityCard.atk;
+        maxAtk = atk;
+        healthRenderer.healthText.text = health.ToString();
+        atkRenderer.atkText.text = atk.ToString();
+        abilities = entityCard.abilities;
+        foreach (Ability ability in abilities)
+        {
+            ability.SetEntity(this);
+        }
+        if (atk == 0)
+        {
+            atkRenderer.HideAtk();
+        }
+    }
+    public void SetTempInfo(EntityCard entityCard)
+    {
+        ID = entityCard.ID;
+        faction = (ID / 10000 == 1) ? Faction.Plant : Faction.Zombie;
+        name = entityCard.name;
+        tags = entityCard.tags;
+        health = entityCard.health;
+        maxHealth = health;
+        atk = entityCard.atk;
+        maxAtk = atk;
+        healthRenderer.healthText.text = health.ToString();
+        atkRenderer.atkText.text = atk.ToString();
+        abilities = entityCard.abilities;
+        foreach (Ability ability in abilities)
+        {
+            ability.SetTempEntity(this);
+        }
+        if (atk == 0)
+        {
+            atkRenderer.HideAtk();
         }
     }
 
+    private IEnumerator MoveTowards(Vector3 targetPosition)
+    {
+        while (transform.position != targetPosition)
+        {
+            transform.position = Vector3.Lerp(transform.position, targetPosition, 8 * Time.deltaTime);
+            yield return null;
+        }
+    }
+    public void ShowApplicableEntity()
+    {
+        applicableIndicator.enabled = true;
+        applicableIndicator.color = Color.white;
+    }
+    public void HideApplicableEntity()
+    {
+        applicableIndicator.enabled = false;
+    }
     public int ID;
-
     [HideInInspector] public int counterAttackCount;
     [HideInInspector] public HealthRenderer healthRenderer;
     [HideInInspector] public AtkRenderer atkRenderer;
@@ -354,12 +514,16 @@ public class Entity : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
     public List<Tag> tags;
     [HideInInspector] public SpriteRenderer spriteRenderer;
     [HideInInspector] public Slot slot;
+    public Position Pos => slot.GetPosition(this);
+    public Line Line => slot.Line;
     public List<Ability> abilities;
     public event DoDamageHandler DoDamageEvent;
     public delegate void DoDamageHandler(int effectiveDamage);
-    public event BattlecryHandler BattlecryEvent;
-    public delegate void BattlecryHandler();
-    public event UpdateHandler OnUpdate;
-    public delegate void UpdateHandler();
+    public event Action OnUpdate;
+    public event Action<int> OnTakeDamageEvent;
+    public string className;
     public new string name;
+    virtual public bool HasBattlecry => false;
+    public Material material;
+    public SpriteRenderer applicableIndicator;
 }

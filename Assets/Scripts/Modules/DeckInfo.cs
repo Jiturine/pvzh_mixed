@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using static Game;
 using UnityEngine;
 using static GameManager;
 

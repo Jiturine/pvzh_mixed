@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Gravestone : Ability
 {
@@ -17,23 +18,21 @@ public class Gravestone : Ability
         this.entity = entity;
         entity.atkRenderer.HideAtk();
         entity.healthRenderer.HideHealth();
-        entity.spriteRenderer.sprite = SpriteManager.gravestoneSprite;
-        GameManager.AddTurnBeginEvent(entity.faction, GetOutOfGrave);
+        entity.spriteRenderer.sprite = SpriteManager.gravestoneSprites[Random.Range(0, 10)];
+        GameManager.AddTurnStartEvent(entity.faction, GetOutOfGrave);
+    }
+    public override void SetTempEntity(Entity entity)
+    {
+        this.entity = entity;
     }
     public void GetOutOfGrave()
     {
         entity.atkRenderer.ShowAtk();
         entity.healthRenderer.ShowHealth();
         entity.spriteRenderer.sprite = SpriteManager.cardSprite[entity.ID];
-        BattlecryManager.Add(entity);
-        GameManager.RemoveTurnBeginEvent(entity.faction, GetOutOfGrave);
+        ActionSequence.AddAction(new BattlecryAction(entity));
+        GameManager.RemoveTurnStartEvent(entity.faction, GetOutOfGrave);
         outOfGrave = true;
-    }
-    public override void SetInfo()
-    {
-        name = "墓碑";
-        description = "直到下一次我方行动前不会显现";
-        ID = 5;
     }
     public bool outOfGrave;
 }

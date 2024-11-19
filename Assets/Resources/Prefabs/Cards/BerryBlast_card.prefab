@@ -122,14 +122,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e82403ebf51c1443bdf9c7a9a3841f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  name: "\u8393\u679C\u8F70\u51FB"
+  className: 
+  name: 
   faction: 0
-  tags: 03000000
+  tags: 
   location: 0
   isSelectable: 0
   count: 0
-  cost: 2
-  ID: 10003
+  cost: 0
+  ID: 0
   isSelected: 0
   content: {fileID: 0}
   costUI: {fileID: 0}
+  animator: {fileID: 0}
+  needToWait: 0
+  AIApplicableColliders: []

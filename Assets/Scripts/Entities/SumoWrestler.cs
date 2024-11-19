@@ -1,44 +1,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using static Game;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static GameManager;
 
 public class SumoWrestler : Entity
 {
-    new void Start()
+    public override bool HasBattlecry => true;
+    override public void Battlecry()
     {
-        base.Start();
-        if (slot != null)
+        if (Game.GetOpponentEntities(faction).Any())
         {
-            BattlecryEvent += MoveEntity;
-            if (!abilities.Any(ability => ability is Gravestone))
-            {
-                abilities.Add(new Gravestone(this));
-            }
-            AIApplicableColliders = ColliderManager.colliders.Where(kvp => kvp.Key / 100 == 1).Select(kvp => kvp.Value).ToList();
-        }
-    }
-    public void MoveEntity()
-    {
-        bool hasEntity = false;
-        foreach (Line line in lines)
-        {
-            if (!line.GetOpponentSlot(faction).Empty)
-            {
-                hasEntity = true;
-                break;
-            }
-        }
-        if (hasEntity)
-        {
-            Time.timeScale = 0;
-            GameManager.OnMoveEntityCompleteEvent += ResponseTimeScale;
             if (faction == myHero.faction)
             {
                 Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
-                MessageBox.ShowMessage("移动一株植物", pos);
+                var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+                messageBoxPanel.ShowMessage("移动一株植物", pos);
                 OnUpdate += UpdateDetect;
             }
             else
@@ -47,7 +26,7 @@ public class SumoWrestler : Entity
                 {
                     Timer.Register(1f, () =>
                 {
-                    EnemyAI.Instance.Shuffle(AIApplicableColliders);
+                    AIApplicableColliders.Shuffle();
                     foreach (Collider2D collider in AIApplicableColliders)
                     {
                         Slot slot = collider.GetComponentInParent<Slot>();
@@ -57,17 +36,16 @@ public class SumoWrestler : Entity
                             break;
                         }
                     }
-                    EnemyAI.Instance.Shuffle(AIApplicableColliders);
+                    AIApplicableColliders.Shuffle();
                     foreach (Collider2D collider in AIApplicableColliders)
                     {
-                        if (IaAbleToMoveTo(collider))
+                        if (selectedEntity.IsAbleToMoveTo(collider))
                         {
-                            GameManager.Instance.MoveEntity(selectedEntity, collider);
+                            ActionSequence.actionSequence.AddFirst(new MoveAction(selectedEntity, collider));
                             selectedEntity = null;
                             break;
                         }
                     }
-                    BattlecryManager.Instance.isBattlecrying = false;
                 }, useRealTime: true);
                 }
             }
@@ -81,39 +59,31 @@ public class SumoWrestler : Entity
             Collider2D[] hitColliders = Physics2D.OverlapPointAll(mousePosition);
             foreach (var collider in hitColliders)
             {
-                if (collider != null && collider.CompareTag("Slot"))
+                if (collider != null && collider.CompareTag("Pos"))
                 {
-                    Slot slot = collider.GetComponentInParent<Slot>();
-                    if (slot.faction == enemyHero.faction)
+                    Position pos = collider.GetComponent<Position>();
+                    if (pos.faction == enemyHero.faction)
                     {
                         if (selectedEntity == null)
                         {
-                            if (slot.GetEntity(collider) != null)
+                            if (pos.entity != null)
                             {
-                                selectedEntity = slot.GetEntity(collider);
+                                selectedEntity = pos.entity;
                                 selectedEntity.spriteRenderer.color *= 0.5f;
-                                Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
-                                MessageBox.ShowMessage("选择目标位置", pos);
+                                Vector3 targetPos = Camera.main.WorldToScreenPoint(transform.position);
+                                var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+                                messageBoxPanel.ShowMessage("选择目标位置", targetPos);
                             }
                         }
                         else
                         {
-                            if (IaAbleToMoveTo(collider))
+                            if (selectedEntity.IsAbleToMoveTo(collider))
                             {
-                                int posID = (selectedEntity.slot.FirstEntity == selectedEntity) ? 0 : 1;
-                                if (gameMode == GameMode.Online)
-                                {
-                                    GameManager.Instance.MoveEntityServerRpc(enemyHero.faction, selectedEntity.slot.lineIndex, posID, ColliderManager.colliderID[collider]);
-                                }
-                                else
-                                {
-                                    GameManager.Instance.MoveEntity(selectedEntity, collider);
-                                }
-                                BattlecryManager.Instance.isBattlecrying = false;
+                                ActionSequence.actionSequence.AddFirst(new MoveAction(selectedEntity, collider));
                                 OnUpdate -= UpdateDetect;
                                 selectedEntity.spriteRenderer.color *= 2f;
                                 selectedEntity = null;
-                                MessageBox.HideMessage();
+                                UIManager.Instance.ClosePanel<MessageBoxPanel>();
                             }
                         }
                     }
@@ -121,53 +91,7 @@ public class SumoWrestler : Entity
             }
         }
     }
-    private void ResponseTimeScale()
-    {
-        Time.timeScale = 1;
-        GameManager.OnMoveEntityCompleteEvent -= ResponseTimeScale;
-    }
-    private bool IaAbleToMoveTo(Collider2D collider)
-    {
-        Slot targetSlot = collider.GetComponentInParent<Slot>();
-        if (lines[targetSlot.lineIndex].terrain == Line.LineTerrain.Water && !selectedEntity.abilities.Any(ability => ability is Amphibious))
-        {
-            return false;
-        }
-        if (targetSlot == selectedEntity.slot)
-        {
-            return targetSlot.GetEntity(collider) != selectedEntity && targetSlot.GetEntity(collider) != null;
-        }
-        if (selectedEntity.abilities.Any(ability => ability is TeamUp))
-        {
-            if (targetSlot.Empty)
-            {
-                if (collider == targetSlot.firstCollider) return true;
-                else return false;
-            }
-            else if (targetSlot.FirstEntity != null && targetSlot.SecondEntity != null) return false;
-            else return true;
-        }
-        else
-        {
-            if (targetSlot.Empty)
-            {
-                if (collider == targetSlot.firstCollider) return true;
-                else return false;
-            }
-            else if (targetSlot.FirstEntity != null && targetSlot.SecondEntity != null) return false;
-            else if (targetSlot.FirstEntity != null)
-            {
-                if (targetSlot.FirstEntity.abilities.Any(ability => ability is TeamUp)) return true;
-                else return false;
-            }
-            else
-            {
-                if (targetSlot.SecondEntity.abilities.Any(ability => ability is TeamUp)) return true;
-                else return false;
-            }
-        }
-    }
     public Entity selectedEntity;
-    public List<Collider2D> AIApplicableColliders;
+    static public List<Collider2D> AIApplicableColliders => ColliderManager.MyColliders;
     public bool moveComplete;
 }

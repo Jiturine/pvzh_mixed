@@ -4,17 +4,11 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
+//使network manager跨场景
 public class MyNetworkManager : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
         DontDestroyOnLoad(gameObject);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }

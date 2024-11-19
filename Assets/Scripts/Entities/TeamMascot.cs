@@ -1,38 +1,31 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using static Game;
 using UnityEngine;
 using static GameManager;
 
 public class TeamMascot : Entity
 {
-    new void Start()
+    public override void Place()
     {
-        base.Start();
-        if (slot != null)
-        {
-            OnTurnStartEvent += OnTurnStart;
-        }
+        base.Place();
+        OnTurnStartEvent += OnTurnStart;
     }
     public void OnTurnStart()
     {
-        foreach (Line line in lines)
+        foreach (Entity entity in Game.GetEntities(faction))
         {
-            Slot slot = line.GetSlot(faction);
-            for (int i = 0; i < 2; i++)
+            if (entity.tags.Contains(Tag.Athlete))
             {
-                Entity entity = slot.entities[i];
-                if (entity != null && entity.tags.Any(tag => tag == Tag.Athlete))
-                {
-                    entity.Atk++;
-                    entity.Health++;
-                }
+                entity.Atk++;
+                entity.Health++;
             }
         }
     }
-    public override void Die()
+    public override void Exit()
     {
-        base.Die();
+        base.Exit();
         OnTurnStartEvent -= OnTurnStart;
     }
 }

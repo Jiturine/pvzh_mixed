@@ -1,74 +1,100 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using static Game;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static GameManager;
 
-public class Line : MonoBehaviour, IPointerClickHandler
+public class Line : Interactable
 {
-    void Awake()
-    {
-        mySlot = transform.Find("My Slot").GetComponent<Slot>();
-        enemySlot = transform.Find("Enemy Slot").GetComponent<Slot>();
-        lineCollider = GetComponent<BoxCollider2D>();
-    }
-    // Start is called before the first frame update
     void Start()
     {
-
+        applicableIndicator.enabled = false;
     }
-
-    // Update is called once per frame
-    void Update()
+    public Slot GetSlot(Faction faction) => (faction == myHero.faction) ? mySlot : enemySlot;
+    public Slot GetOpponentSlot(Faction faction) => (faction == myHero.faction) ? enemySlot : mySlot;
+    public void EndTurn()
     {
-
-    }
-    public void OnPointerClick(PointerEventData eventData)
-    {
-    }
-    public Slot GetSlot(Faction faction)
-    {
-        if (faction == myHero.faction)
+        OnEndTurnEvent?.Invoke();
+        if (!mySlot.Empty)
         {
-            return mySlot;
+            if (mySlot.FirstEntity != null && mySlot.FirstEntity.Atk != 0)
+            {
+                mySlot.FirstEntity.ReadyToAttack = true;
+                mySlot.FirstEntity.counterAttackCount = 1;
+            }
+            if (mySlot.SecondEntity != null && mySlot.SecondEntity.Atk != 0)
+            {
+                mySlot.SecondEntity.ReadyToAttack = true;
+                mySlot.SecondEntity.counterAttackCount = 1;
+            }
         }
-        else
+        if (!enemySlot.Empty)
         {
-            return enemySlot;
+            if (enemySlot.FirstEntity != null && enemySlot.FirstEntity.Atk != 0)
+            {
+                enemySlot.FirstEntity.ReadyToAttack = true;
+                enemySlot.FirstEntity.counterAttackCount = 1;
+            }
+            if (enemySlot.SecondEntity != null && enemySlot.SecondEntity.Atk != 0)
+            {
+                enemySlot.SecondEntity.ReadyToAttack = true;
+                enemySlot.SecondEntity.counterAttackCount = 1;
+            }
         }
     }
-    public Slot GetOpponentSlot(Faction faction)
-    {
-        if (faction == myHero.faction)
-        {
-            return enemySlot;
-        }
-        else
-        {
-            return mySlot;
-        }
-    }
-    public void EndTurn() { OnEndTurnEvent?.Invoke(); }
     public void OnEntityEnter(Entity entity) { OnEntityEnterEvent?.Invoke(entity); }
     public void OnEntityLeave(Entity entity) { OnEntityLeaveEvent?.Invoke(entity); }
+
+    public void ShowApplicableLine()
+    {
+        applicableIndicator.enabled = true;
+        applicableIndicator.color = Color.white;
+    }
+    public void HideApplicableLine()
+    {
+        applicableIndicator.enabled = false;
+    }
+
+    override public void OnPointerEnter()
+    {
+        if (applicableIndicator.enabled)
+        {
+            applicableIndicator.color = Color.green;
+        }
+    }
+
+    override public void OnPointerExit()
+    {
+        if (applicableIndicator.enabled)
+        {
+            applicableIndicator.color = Color.white;
+        }
+    }
+    public override void OnPointerUp()
+    {
+        if (Game.State is MyTurnState && SelectedCard != null && SelectedCard.IsApplicableFor(lineCollider))
+        {
+            ActionSequence.AddAction(new ApplyCardAction(SelectedCard, lineCollider));
+        }
+    }
 
     public int index;
     public Slot mySlot;
     public Slot enemySlot;
     public BoxCollider2D lineCollider;
 
-    public enum LineTerrain
+    public enum Terrain
     {
         Highland,
         Plain,
         Water
     }
-    public LineTerrain terrain;
+    public Terrain terrain;
     public Environment environment;
-    public delegate void EndTurnHandler();
-    public event EndTurnHandler OnEndTurnEvent;
-    public delegate void EntityEnterHandler(Entity entity);
-    public event EntityEnterHandler OnEntityEnterEvent;
-    public delegate void EntityLeaveHandler(Entity entity);
-    public event EntityEnterHandler OnEntityLeaveEvent;
+    public SpriteRenderer applicableIndicator;
+    public event Action OnEndTurnEvent;
+    public event Action<Entity> OnEntityEnterEvent;
+    public event Action<Entity> OnEntityLeaveEvent;
 }

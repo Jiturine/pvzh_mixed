@@ -24,7 +24,20 @@ public class Ability
     {
         this.card = card;
     }
-    virtual public void SetInfo() { }
+    virtual public void SetTempEntity(Entity entity)
+    {
+        SetEntity(entity);
+    }
+    virtual public void Remove()
+    {
+
+    }
+    public void SetInfo()
+    {
+        ID = CardDictionary.abilityID[GetType().Name];
+        name = CardDictionary.ability[ID].name;
+        description = CardDictionary.ability[ID].description;
+    }
     public string name;
     public string description;
     public int ID;

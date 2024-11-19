@@ -4,12 +4,4 @@ using UnityEngine;
 
 public class VampireZombieCard : EntityCard
 {
-    new void Start()
-    {
-        base.Start();
-        abilities = new List<Ability>(){
-            new NoCounterAttack(),
-            new Vampirism()
-        };
-    }
 }

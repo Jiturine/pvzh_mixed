@@ -42,6 +42,7 @@ public class CardLibrary : MonoBehaviour
         if (cardList == null) cardList = new List<Card>();
         GameObject newCardObject = Instantiate(CardDictionary.card[ID], Instance.contentTransform);
         Card newCard = newCardObject.GetComponent<Card>();
+        newCard.SetInfo();
         newCard.location = Card.Location.InCardLibrary;
         cardList.Add(newCard);
     }

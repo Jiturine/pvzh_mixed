@@ -1,55 +1,86 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 
-public class AudioManager : MonoBehaviour
+public class AudioManager : PersistentSingleton<AudioManager>
 {
-    private static AudioManager _instance;
-    public static AudioManager Instance
+    void Start()
     {
-        get; set;
-    }
-    void Awake()
-    {
-        if (Instance == null)
+        BGMAudioSource = GetComponent<AudioSource>();
+        SFXVolume = 1f;
+        BGMVolume = 1f;
+        soundEffects = new Dictionary<string, AudioClip>()
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
+            ["ButtonClick"] = Resources.Load<AudioClip>("AudioClip/SFX/ButtonClick"),
+            ["Tap1"] = Resources.Load<AudioClip>("AudioClip/SFX/Tap1"),
+            ["Tap2"] = Resources.Load<AudioClip>("AudioClip/SFX/Tap2")
+        };
+        BGMs = new Dictionary<string, AudioClip>
         {
-            Destroy(gameObject);
+            ["PVZHmain"] = Resources.Load<AudioClip>("AudioClip/BGM/PVZHmain"),
+            ["PVZHdeckmusic"] = Resources.Load<AudioClip>("AudioClip/BGM/PVZHdeckmusic"),
+            ["Tutorial Grasswalk"] = Resources.Load<AudioClip>("AudioClip/BGM/Tutorial Grasswalk"),
+            ["GameWon"] = Resources.Load<AudioClip>("AudioClip/BGM/GameWon"),
+            ["Lost"] = Resources.Load<AudioClip>("AudioClip/BGM/Lost")
+        };
+        PlayingBGM = "";
+    }
+    public void PlayBGM(string name)
+    {
+        if (BGMs == null) return;
+        if (!BGMs.Any(bgm => bgm.Key == name))
+        {
+            Debug.LogError("无BGM!");
         }
+        if (BGMAudioSource.clip != null) BGMAudioSource.Stop();
+        BGMAudioSource.clip = BGMs[name];
+        BGMAudioSource.Play();
+        switch (name)
+        {
+            case "PVZHmain":
+            case "PVZHdeckmusic":
+            case "Tutorial Grasswalk":
+                BGMAudioSource.loop = true;
+                break;
+            case "GameWon":
+            case "Lost":
+                BGMAudioSource.loop = false;
+                break;
+        }
+        PlayingBGM = name;
     }
-    public void Init()
+    public void PlaySFX(string name)
     {
-        audioSource = GetComponent<AudioSource>();
-        sceneMusic = new AudioClip[10];
-        sceneMusic[0] = Resources.Load<AudioClip>("AudioClip/PVZHmain");
-        sceneMusic[1] = Resources.Load<AudioClip>("AudioClip/PVZHdeckmusic");
-        sceneMusic[2] = Resources.Load<AudioClip>("AudioClip/Tutorial Grasswalk");
-        sceneMusic[3] = Resources.Load<AudioClip>("AudioClip/GameWon");
-        sceneMusic[4] = Resources.Load<AudioClip>("AudioClip/Lost");
-    }
-    public void Play(int index)
-    {
-        if (audioSource.clip != null) audioSource.Stop();
-        audioSource.clip = sceneMusic[index];
+        if (!soundEffects.Any(bgm => bgm.Key == name))
+        {
+            Debug.LogError("无音效!");
+        }
+        AudioSource audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.clip = soundEffects[name];
+        audioSource.volume = SFXVolume;
         audioSource.Play();
-        switch (index)
+        Destroy(audioSource, soundEffects[name].length);
+    }
+    private float _bgmVolume;
+    public float BGMVolume
+    {
+        get => _bgmVolume;
+        set
         {
-            case 0:
-            case 1:
-            case 2:
-                audioSource.loop = true;
-                break;
-            case 3:
-            case 4:
-                audioSource.loop = false;
-                break;
+            _bgmVolume = value;
+            BGMAudioSource.volume = value;
         }
     }
-    public AudioClip[] sceneMusic;
-    public AudioSource audioSource;
+    private float _sfxVolume;
+    public float SFXVolume
+    {
+        get => _sfxVolume;
+        set => _sfxVolume = value;
+    }
+    public Dictionary<string, AudioClip> BGMs;
+    public Dictionary<string, AudioClip> soundEffects;
+    public AudioSource BGMAudioSource;
+    public string PlayingBGM;
 }

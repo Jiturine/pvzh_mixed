@@ -5,26 +5,18 @@ using System.Linq;
 
 public class SunFlower : Entity
 {
-    // Start is called before the first frame update
-    new void Start()
+    public override void Place()
     {
-        base.Start();
-        if (slot != null)
-        {
-            if (!abilities.Any(ability => ability is TeamUp))
-            {
-                abilities.Add(new TeamUp());
-            }
-            OnTurnStartEvent += OnTurnStart;
-        }
+        base.Place();
+        OnTurnStartEvent += OnTurnStart;
     }
     public void OnTurnStart()
     {
         AllyHero.totalPoint++;
     }
-    public override void Die()
+    public override void Exit()
     {
-        base.Die();
+        base.Exit();
         OnTurnStartEvent -= OnTurnStart;
     }
 }

@@ -1,20 +1,15 @@
 using System;
-using static GameManager;
+using static Game;
 
 public class SkyShooter : Entity
 {
-    // Start is called before the first frame update
-    new void Start()
+    public override void Place()
     {
-        base.Start();
-        if (slot != null)
+        base.Place();
+        if (Line.terrain == Line.Terrain.Highland)
         {
-            Line line = lines[slot.lineIndex];
-            if (line.terrain == Line.LineTerrain.Highland)
-            {
-                Atk += 2;
-                Health += 2;
-            }
+            Atk += 2;
+            Health += 2;
         }
     }
 }

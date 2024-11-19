@@ -31,13 +31,7 @@ public class AtkRenderer : MonoBehaviour
     }
     public void AtkShake()
     {
-        animator.SetBool("Atk Shake", true);
-        GameManager.playingAnimationCounter++;
-        Timer.Register(0.2f, () =>
-    {
-        animator.SetBool("Atk Shake", false);
-        GameManager.playingAnimationCounter--;
-    });
+        animator.Play("AtkShake");
     }
 
     public TextMeshPro atkText;

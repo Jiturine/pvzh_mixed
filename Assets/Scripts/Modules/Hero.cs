@@ -1,23 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
+using static Game;
 using UnityEngine;
 using UnityEngine.UI;
 using static GameManager;
 
 public class Hero : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
         healthUI = GetComponent<HealthUI>();
-        shieldImage = transform.Find("shieldImage").GetComponent<Image>();
         health = 20;
         maxHealth = 20;
         Shield = 0;
+        ShieldCount = 3;
         endTurn = false;
+        totalPoint = 1;
     }
-
-    // Update is called once per frame
     void Update()
     {
         healthUI.healthText.text = health.ToString();
@@ -66,14 +65,53 @@ public class Hero : MonoBehaviour
         set
         {
             shield = value;
-            shieldImage.sprite = SpriteManager.shieldSprite[shield];
+            if (faction == Faction.Plant)
+            {
+                shieldImage.sprite = SpriteManager.plantHeroShieldSprites[value];
+            }
+            else
+            {
+                shieldImage.sprite = SpriteManager.zombieHeroShieldSprites[value];
+            }
         }
     }
     public int totalPoint;
-    public bool endTurn;
-    public int turnOrder;
+    [HideInInspector] public bool endTurn;
+    [HideInInspector] public int turnOrder;
     public HealthUI healthUI;
     public Image shieldImage;
+    public Image[] smallShield;
+    public int shieldCount;
+    public int ShieldCount
+    {
+        get => shieldCount;
+        set
+        {
+            shieldCount = value;
+            if (faction == Faction.Plant)
+            {
+                for (int i = 0; i < 3 - shieldCount; i++)
+                {
+                    smallShield[i].sprite = SpriteManager.plantHeroEmptyShieldSprite;
+                }
+                for (int i = 3 - shieldCount; i < 3; i++)
+                {
+                    smallShield[i].sprite = SpriteManager.plantHeroExistShieldSprite;
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 3 - shieldCount; i++)
+                {
+                    smallShield[i].sprite = SpriteManager.zombieHeroEmptyShieldSprite;
+                }
+                for (int i = 3 - shieldCount; i < 3; i++)
+                {
+                    smallShield[i].sprite = SpriteManager.zombieHeroExistShieldSprite;
+                }
+            }
+        }
+    }
     public Faction faction;
 }
 

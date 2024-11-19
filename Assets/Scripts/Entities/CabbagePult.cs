@@ -1,20 +1,16 @@
 using System;
-using static GameManager;
+using static Game;
 
 public class CabbagePult : Entity
 {
-    // Start is called before the first frame update
-    new void Start()
+    public override void Place()
     {
-        base.Start();
-        if (slot != null)
+        base.Place();
+        Line line = lines[slot.lineIndex];
+        if (line.terrain == Line.Terrain.Highland)
         {
-            Line line = lines[slot.lineIndex];
-            if (line.terrain == Line.LineTerrain.Highland)
-            {
-                Atk++;
-                Health++;
-            }
+            Atk++;
+            Health++;
         }
     }
 }

@@ -1,107 +1,462 @@
 {
     "10001": {
-        "name": "PeaShooter",
+        "className": "PeaShooter",
+        "name": "豌豆射手",
+        "tags": [
+            "Pea"
+        ],
+        "cost": 1,
+        "health": 2,
+        "atk": 1,
+        "abilities": [],
         "description": "",
         "isEntity": true
     },
     "10002": {
-        "name": "SunFlower",
+        "className": "SunFlower",
+        "name": "向日葵",
+        "tags": [
+            "Flower"
+        ],
+        "cost": 1,
+        "health": 1,
+        "atk": 0,
+        "abilities": [
+            "TeamUp"
+        ],
         "description": "回合开始：+1<sprite=0>",
         "isEntity": true
     },
     "10003": {
-        "name": "BerryBlast",
+        "className": "BerryBlast",
+        "name": "莓果轰击",
+        "tags": [
+            "Berry"
+        ],
+        "cost": 2,
         "description": "对一个僵尸造成3点伤害",
         "isEntity": false
     },
     "10004": {
-        "name": "PeaPod",
+        "className": "PeaPod",
+        "name": "豌豆荚",
+        "tags": [
+            "Pea"
+        ],
+        "cost": 1,
+        "health": 1,
+        "atk": 1,
+        "abilities": [],
         "description": "回合开始：获得+1<sprite=3>/+1<sprite=2>",
         "isEntity": true
     },
     "10005": {
-        "name": "WallNut",
+        "className": "WallNut",
+        "name": "坚果墙",
+        "tags": [
+            "Nut"
+        ],
+        "cost": 1,
+        "health": 6,
+        "atk": 0,
+        "abilities": [
+            "TeamUp"
+        ],
         "description": "",
         "isEntity": true
     },
     "10006": {
-        "name": "Cactus",
+        "className": "Cactus",
+        "name": "仙人掌",
+        "tags": [
+            "Flower"
+        ],
+        "cost": 2,
+        "health": 5,
+        "atk": 1,
+        "abilities": [
+            "Bullseye"
+        ],
         "description": "",
         "isEntity": true
     },
     "10007": {
-        "name": "Spikeweed",
+        "className": "Spikeweed",
+        "name": "地刺防区",
+        "tags": [],
+        "cost": 2,
         "description": "回合结束：对本条线上的僵尸造成2点伤害",
         "isEntity": false
     },
     "10008": {
-        "name": "TorchWood",
+        "className": "TorchWood",
+        "name": "火炬树桩",
+        "tags": [
+            "Root"
+        ],
+        "cost": 1,
+        "health": 3,
+        "atk": 0,
+        "abilities": [
+            "TeamUp"
+        ],
         "description": "身后的豌豆获得+2<sprite=3>",
         "isEntity": true
     },
     "10009": {
-        "name": "Flourish",
+        "className": "Flourish",
+        "name": "枝繁叶茂",
+        "tags": [
+            "Flower"
+        ],
+        "cost": 3,
         "description": "抽2张牌",
         "isEntity": false
     },
     "10010": {
-        "name": "Cattail",
+        "className": "Cattail",
+        "name": "香蒲",
+        "tags": [
+            "Animal"
+        ],
+        "cost": 3,
+        "health": 2,
+        "atk": 3,
+        "abilities": [
+            "Amphibious"
+        ],
         "description": "",
         "isEntity": true
     },
     "10011": {
-        "name": "CabbagePult",
+        "className": "CabbagePult",
+        "name": "卷心菜投手",
+        "tags": [
+            "Leafy"
+        ],
+        "cost": 2,
+        "health": 3,
+        "atk": 1,
+        "abilities": [],
         "description": "在高地上打出：获得+1<sprite=3>/+1<sprite=2>",
         "isEntity": true
     },
     "10012": {
-        "name": "SkyShooter",
+        "className": "SkyShooter",
+        "name": "天空射手",
+        "tags": [
+            "Pea"
+        ],
+        "cost": 4,
+        "health": 2,
+        "atk": 3,
+        "abilities": [],
         "description": "在高地上打出：获得+2<sprite=3>/+2<sprite=2>",
         "isEntity": true
     },
     "10013": {
-        "name": "Threepeater",
+        "className": "Threepeater",
+        "name": "三线射手",
+        "tags": [
+            "Pea"
+        ],
+        "cost": 5,
+        "health": 5,
+        "atk": 1,
+        "abilities": [],
         "description": "同时攻击自己和相邻线上的僵尸",
         "isEntity": true
     },
+    "10014": {
+        "className": "BonkChoy",
+        "name": "菜问",
+        "tags": [
+            "Leafy"
+        ],
+        "cost": 1,
+        "health": 1,
+        "atk": 1,
+        "abilities": [
+            "Charge"
+        ],
+        "description": "打出：本回合内获得+1<sprite=3>",
+        "isEntity": true
+    },
+    "10015": {
+        "className": "OnionRings",
+        "name": "洋葱圈",
+        "tags": [
+            "Root"
+        ],
+        "cost": 5,
+        "health": 4,
+        "atk": 4,
+        "abilities": [],
+        "description": "打出：你手牌内的所有单位变为4<sprite=3>/4<sprite=2>",
+        "isEntity": true
+    },
+    "10016": {
+        "className": "SteelMagnolia",
+        "name": "铁木兰",
+        "tags": [
+            "Flower"
+        ],
+        "cost": 3,
+        "health": 2,
+        "atk": 2,
+        "abilities": [],
+        "description": "打出：自己与相邻线上的植物获得+2<sprite=2>",
+        "isEntity": true
+    },
+    "10017": {
+        "className": "HibernatingBeary",
+        "name": "冬眠熊莓",
+        "tags": [
+            "Berry",
+            "Animal"
+        ],
+        "cost": 3,
+        "health": 8,
+        "atk": 0,
+        "abilities": [],
+        "description": "受到伤害：这株植物获得+4<sprite=3>",
+        "isEntity": true
+    },
+    "10018": {
+        "className": "Podfather",
+        "name": "豌豆教父",
+        "tags": [
+            "Pea"
+        ],
+        "cost": 3,
+        "health": 2,
+        "atk": 2,
+        "abilities": [],
+        "description": "打出豌豆时，使那株豌豆获得+2<sprite=3>/+2<sprite=2>",
+        "isEntity": true
+    },
     "20001": {
-        "name": "CommonZombie",
+        "className": "BaseballZombie",
+        "name": "棒球僵尸",
+        "tags": [
+            "Athlete"
+        ],
+        "cost": 1,
+        "health": 1,
+        "atk": 1,
+        "abilities": [],
         "description": "",
         "isEntity": true
     },
     "20002": {
-        "name": "VampireZombie",
+        "className": "VampireZombie",
+        "name": "吸血鬼僵尸",
+        "tags": [],
+        "cost": 3,
+        "health": 3,
+        "atk": 2,
+        "abilities": [
+            "NoCounterAttack",
+            "Vampirism"
+        ],
         "description": "",
         "isEntity": true
     },
     "20003": {
-        "name": "SumoWrestler",
-        "description": "打出：移动一株植物",
+        "className": "SumoWrestler",
+        "name": "相扑僵尸",
+        "tags": [
+            "Athlete"
+        ],
+        "cost": 2,
+        "health": 3,
+        "atk": 2,
+        "abilities": [
+            "Gravestone"
+        ],
+        "description": "从墓碑中显现：移动一株植物",
         "isEntity": true
     },
     "20004": {
-        "name": "FunDeadRaiser",
+        "className": "FunDeadRaiser",
+        "name": "众筹复生",
+        "tags": [],
+        "cost": 3,
         "description": "抽2张牌",
         "isEntity": false
     },
     "20005": {
-        "name": "RollingStone",
+        "className": "RollingStone",
+        "name": "滚石",
+        "tags": [],
+        "cost": 1,
         "description": "消灭一株2<sprite=3>及以下的植物",
         "isEntity": false
     },
     "20006": {
-        "name": "Conehead",
+        "className": "Conehead",
+        "name": "路障僵尸",
+        "tags": [],
+        "cost": 2,
+        "health": 2,
+        "atk": 2,
+        "abilities": [
+            "Armored"
+        ],
         "description": "",
         "isEntity": true
     },
     "20007": {
-        "name": "TeamMascot",
+        "className": "TeamMascot",
+        "name": "吉祥物小鬼",
+        "tags": [
+            "Athlete"
+        ],
+        "cost": 3,
+        "health": 4,
+        "atk": 1,
+        "abilities": [],
         "description": "回合开始：所有运动员获得+1<sprite=3>/+1<sprite=2>",
         "isEntity": true
     },
     "20008": {
-        "name": "DolphinRider",
+        "className": "DolphinRider",
+        "name": "海豚骑手僵尸",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 3,
+        "health": 2,
+        "atk": 3,
+        "abilities": [
+            "Amphibious"
+        ],
         "description": "",
+        "isEntity": true
+    },
+    "20009": {
+        "className": "DogWalker",
+        "name": "遛狗僵尸",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 1,
+        "health": 2,
+        "atk": 2,
+        "abilities": [
+            "Hunt"
+        ],
+        "description": "",
+        "isEntity": true
+    },
+    "20010": {
+        "className": "ChimneySweep",
+        "name": "烟囱工僵尸",
+        "tags": [
+            "Professional"
+        ],
+        "cost": 1,
+        "health": 1,
+        "atk": 2,
+        "abilities": [],
+        "description": "在高地上打出：获得+1<sprite=3>/+1<sprite=2>",
+        "isEntity": true
+    },
+    "20011": {
+        "className": "LocustSwarm",
+        "name": "蝗虫群",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 5,
+        "description": "消灭一株植物",
+        "isEntity": false
+    },
+    "20012": {
+        "className": "VitaminZ",
+        "name": "维生素Z",
+        "tags": [
+            "Gourmet"
+        ],
+        "cost": 3,
+        "description": "一个僵尸获得+3<sprite=3>/+3<sprite=2>",
+        "isEntity": false
+    },
+    "20013": {
+        "className": "Zookeeper",
+        "name": "动物园僵尸",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 2,
+        "health": 2,
+        "atk": 2,
+        "abilities": [],
+        "description": "当你打出宠物时，所有宠物僵尸获得+1<sprite=3>",
+        "isEntity": true
+    },
+    "20014": {
+        "className": "CatLady",
+        "name": "猫夫人僵尸",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 1,
+        "health": 4,
+        "atk": 0,
+        "abilities": [],
+        "description": "当你打出宠物时，这个僵尸在本回合获得+3<sprite=3>，每回合首次通过此方式+<sprite=3>时，这个僵尸可以攻击",
+        "isEntity": true
+    },
+    "20015": {
+        "className": "PiedPiper",
+        "name": "花衣吹笛手",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 2,
+        "health": 1,
+        "atk": 2,
+        "abilities": [
+            "Gravestone"
+        ],
+        "description": "从墓碑中显现：使本条线上的所有植物获得-1<sprite=3>/-1<sprite=2>",
+        "isEntity": true
+    },
+    "20016": {
+        "className": "YetiLunchbox",
+        "name": "雪人午餐盒",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 1,
+        "description": "使一只僵尸获得+1<sprite=3>/+1<sprite=2>",
+        "isEntity": false
+    },
+    "20017": {
+        "className": "ZombieYeti",
+        "name": "僵尸雪人",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 3,
+        "health": 3,
+        "atk": 3,
+        "abilities": [],
+        "description": "打出：获得一张雪人午餐盒（1<sprite=1>，使一只僵尸获得+1<sprite=3>/+1<sprite=2>）\n受到攻击：弹射这只僵尸",
+        "isEntity": true
+    },
+    "20018": {
+        "className": "FraidyCat",
+        "name": "胆小猫",
+        "tags": [
+            "Pet"
+        ],
+        "cost": 1,
+        "health": 2,
+        "atk": 2,
+        "abilities": [],
+        "description": "当对方打出锦囊牌时，这只僵尸获得+1<sprite=3>/+1<sprite=2>，并随机移动至另一条线上",
         "isEntity": true
     }
 }

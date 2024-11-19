@@ -1,0 +1,47 @@
+{
+    "1": {
+        "className": "NoCounterAttack",
+        "name": "不反",
+        "description": "这名队友攻击敌方时，敌方不会反击"
+    },
+    "2": {
+        "className": "TeamUp",
+        "name": "组队",
+        "description": "你可以在这条线路上放置两个队友"
+    },
+    "3": {
+        "className": "Vampirism",
+        "name": "吸血",
+        "description": "当这名队友造成伤害时，为自己恢复等量生命值"
+    },
+    "4": {
+        "className": "Bullseye",
+        "name": "必中",
+        "description": "这名队友攻击对方英雄时，不会填补其超能格挡槽"
+    },
+    "5": {
+        "className": "Gravestone",
+        "name": "墓碑",
+        "description": "直到下一次我方行动前不会显现"
+    },
+    "6": {
+        "className": "Armored",
+        "name": "护甲",
+        "description": "受到伤害时降低伤害"
+    },
+    "7": {
+        "className": "Amphibious",
+        "name": "两栖",
+        "description": "可以放置在水路"
+    },
+    "8": {
+        "className": "Charge",
+        "name": "冲锋",
+        "description": "此单位在打出的回合就可以攻击"
+    },
+    "9": {
+        "className": "Hunt",
+        "name": "捕猎",
+        "description": "每当有敌方单位打出，此单位移动到那条线上"
+    }
+}

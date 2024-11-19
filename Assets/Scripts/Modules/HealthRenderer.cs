@@ -6,18 +6,11 @@ using UnityEngine.UI;
 
 public class HealthRenderer : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Awake()
     {
         healthText = transform.Find("healthText").GetComponent<TextMeshPro>();
         healthSprite = transform.Find("healthSprite").GetComponent<SpriteRenderer>();
         animator = transform.Find("healthSprite").GetComponent<Animator>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
     public void HideHealth()
     {
@@ -31,13 +24,7 @@ public class HealthRenderer : MonoBehaviour
     }
     public void HealthShake()
     {
-        animator.SetBool("Health Shake", true);
-        GameManager.playingAnimationCounter++;
-        Timer.Register(0.2f, () =>
-    {
-        animator.SetBool("Health Shake", false);
-        GameManager.playingAnimationCounter--;
-    });
+        animator.Play("HealthShake");
     }
 
     public TextMeshPro healthText;

@@ -1,11 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class SceneLoader : MonoBehaviour
+public class SceneLoader : NetworkBehaviour
 {
-    private static SceneLoader _instance;
     public static SceneLoader Instance
     {
         get; set;
@@ -22,35 +23,70 @@ public class SceneLoader : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    // Start is called before the first frame update
-    void Start()
+    // public IEnumerator LoadScene(string name)
+    // {
+    //     animator = GameObject.Find("Mask Image").GetComponent<Animator>();
+    //     animator.SetBool("FadeIn", false);
+    //     animator.SetBool("FadeOut", true);
+    //     AsyncOperation async = SceneManager.LoadSceneAsync(name);
+    //     async.allowSceneActivation = false;
+    //     yield return new WaitForSeconds(1f);
+    //     async.allowSceneActivation = true;
+    //     async.completed += OnLoadedScene;
+    // }
+    // private void OnLoadedScene(AsyncOperation async)
+    // {
+    //     animator = GameObject.Find("Mask Image").GetComponent<Animator>();
+    //     animator.SetBool("FadeOut", false);
+    //     animator.SetBool("FadeIn", true);
+    //     StopAllCoroutines();
+    // }
+    public async void LoadSceneAsync(string name)
     {
-
+        readyClientNumber = 0;
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(name);
+        asyncLoad.allowSceneActivation = false; // 等待所有客户端加载完成后再激活场景
+        bool first = true;
+        // 等待场景加载进度
+        while (!asyncLoad.isDone)
+        {
+            // 如果所有客户端加载完毕，激活场景
+            if (asyncLoad.progress >= 0.9f)
+            {
+                if (first)
+                {
+                    if (!IsServer)
+                    {
+                        UpdateStateServerRpc();
+                    }
+                    else
+                    {
+                        readyClientNumber++;
+                    }
+                    first = false;
+                }
+                if (ableToContinue)
+                {
+                    asyncLoad.allowSceneActivation = true;
+                }
+                if (readyClientNumber >= 2 && IsServer)
+                {
+                    MessageClientRpc();
+                }
+            }
+            await Task.Yield(); // 等待一帧
+        }
     }
-
-    // Update is called once per frame
-    void Update()
+    [ServerRpc(RequireOwnership = false)]
+    public void UpdateStateServerRpc()
     {
-
+        readyClientNumber++;
     }
-
-    public IEnumerator LoadScene(string name)
+    [ClientRpc]
+    public void MessageClientRpc()
     {
-        animator = GameObject.Find("Mask Image").GetComponent<Animator>();
-        animator.SetBool("FadeIn", false);
-        animator.SetBool("FadeOut", true);
-        AsyncOperation async = SceneManager.LoadSceneAsync(name);
-        async.allowSceneActivation = false;
-        yield return new WaitForSeconds(1f);
-        async.allowSceneActivation = true;
-        async.completed += OnLoadedScene;
+        ableToContinue = true;
     }
-    private void OnLoadedScene(AsyncOperation async)
-    {
-        animator = GameObject.Find("Mask Image").GetComponent<Animator>();
-        animator.SetBool("FadeOut", false);
-        animator.SetBool("FadeIn", true);
-        StopAllCoroutines();
-    }
-    public Animator animator;
+    public int readyClientNumber;
+    public bool ableToContinue;
 }

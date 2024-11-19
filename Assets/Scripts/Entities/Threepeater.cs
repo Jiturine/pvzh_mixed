@@ -1,20 +1,18 @@
 using static GameManager;
 using System.Linq;
 using UnityEngine;
-
+using static Game;
+using System.Threading.Tasks;
 
 public class Threepeater : Entity
 {
     public override void Attack()
     {
         ReadyToAttack = false;
-        SetAttackAnimation(true);
-        if (!slot.OpponentSlot.Empty && slot.OpponentSlot.FrontEntity.abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false))
+        SetAttackAnimation();
+        if (!slot.OpponentSlot.Empty && slot.OpponentSlot.FrontEntity.abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
         {
-            Timer.Register(0.5f, () =>
-            {
-                SetAttackAnimation(false);
-            });
+            return;
         }
         else
         {
@@ -54,7 +52,7 @@ public class Threepeater : Entity
                 Entity attackEntity = slot.OpponentSlot.FrontEntity;
                 DoDamage(attackEntity, atk);
                 selfDamage = 0;
-                if (attackEntity.counterAttackCount > 0 && !abilities.Any(ability => ability is NoCounterAttack))
+                if (attackEntity.counterAttackCount > 0 && !abilities.Contains<NoCounterAttack>())
                 {
                     attackEntity.CounterAttack();
                 }
@@ -62,7 +60,7 @@ public class Threepeater : Entity
                 int heroDamage = leftDamage + rightDamage + selfDamage;
                 if (heroDamage > 0)
                 {
-                    if (!abilities.Any(ability => ability is Bullseye))
+                    if (!abilities.Contains<Bullseye>())
                     {
                         int increaseShield = Random.Range(1, 4);
                         if (increaseShield + OpponentHero.Shield >= 10)
@@ -81,15 +79,14 @@ public class Threepeater : Entity
                     }
                 }
             }
-            SetAttackAnimation(false);
         });
         }
     }
     public override void CounterAttack()
     {
-        if (abilities.Any(ability => ability is Gravestone gravestone && gravestone.outOfGrave == false)) return;
+        if (abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false) return;
         counterAttackCount--;
-        SetAttackAnimation(true);
+        SetAttackAnimation();
         Timer.Register(0.5f, () =>
     {
         int leftDamage = atk, rightDamage = atk, selfDamage = atk;
@@ -131,7 +128,7 @@ public class Threepeater : Entity
         int heroDamage = leftDamage + rightDamage + selfDamage;
         if (heroDamage > 0)
         {
-            if (!abilities.Any(ability => ability is Bullseye))
+            if (!abilities.Contains<Bullseye>())
             {
                 int increaseShield = Random.Range(1, 4);
                 if (increaseShield + OpponentHero.Shield >= 10)
@@ -149,7 +146,6 @@ public class Threepeater : Entity
                 DoDamage(OpponentHero, heroDamage);
             }
         }
-        SetAttackAnimation(false);
     });
     }
 }

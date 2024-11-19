@@ -440,19 +440,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7809279666553301405, guid: a7a63dc062f576647aa1691058d20e5e, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7809279666553301405, guid: a7a63dc062f576647aa1691058d20e5e, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7809279666553301405, guid: a7a63dc062f576647aa1691058d20e5e, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7809279666553301405, guid: a7a63dc062f576647aa1691058d20e5e, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 7809279666553301405, guid: a7a63dc062f576647aa1691058d20e5e, type: 3}
       propertyPath: m_SizeDelta.x
@@ -559,6 +559,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f110fec12786f72488d3f81176c77d5d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  className: 
   name: 
   faction: 0
   tags: 

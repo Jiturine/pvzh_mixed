@@ -1,24 +1,18 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using Newtonsoft.Json;
+using static Game;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
+using System.Security;
 
 public class GameManager : NetworkBehaviour
 {
-
-    private static GameManager _instance;
-    public static GameManager Instance
-    {
-        get; set;
-    }
+    public static GameManager Instance { get; set; }
     void Awake()
     {
         if (Instance == null)
@@ -31,290 +25,98 @@ public class GameManager : NetworkBehaviour
             Destroy(gameObject);
         }
     }
-
-    // Start is called before the first frame update
     void Start()
     {
-        sceneLoader = GameObject.Find("SceneLoader").GetComponent<SceneLoader>();
-        LoadMainMenuScene();
+        NetworkManager.OnClientConnectedCallback += (id) =>
+        {
+            Debug.Log("A new client connected, id = " + id);
+        };
+        NetworkManager.OnClientDisconnectCallback += (id) =>
+        {
+            Debug.Log("A new client disconnected, id = " + id);
+        };
+        NetworkManager.OnServerStarted += () =>
+        {
+            Debug.Log("Server Start!");
+        };
     }
-    // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && gameState != UIState.MainMenu)
+        if (gameState == GameState.GamePlay)
         {
-            OptionsMenu.Instance.ToggleMenu();
-        }
-        switch (gameState)
-        {
-            case UIState.MainMenu:
-                break;
-            case UIState.SelectCard:
-                break;
-            case UIState.GamePlay:
-                if (myHero == null || !decideTurnOrderComplete) return;
-                if (myHero.health == 0 || enemyHero.health == 0)
-                {
-                    EndGame();
-                }
-                if (Input.GetMouseButtonDown(0))
-                {
-                    if (turnPhase == TurnPhase.MyTurn)
-                    {
-                        Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                        Collider2D[] hitColliders = Physics2D.OverlapPointAll(mousePosition);
-                        foreach (var collider in hitColliders)
-                        {
-                            if (selectedCard != null)
-                            {
-                                if (selectedCard.IsApplicableFor(collider))
-                                {
-                                    if (gameMode == GameMode.Online)
-                                    {
-                                        ApplyCardServerRpc(myHero.faction, myHandCards.cardList.IndexOf(selectedCard), ColliderManager.colliderID[collider]);
-                                        if (selectedCard is EntityCard entityCard)
-                                        {
-                                            Destroy(entityCard.curEntity);
-                                            if (!selectedCard.needToWait)
-                                            {
-                                                SwitchPhaseServerRpc();
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        selectedCard.ApplyFor(collider);
-                                        if (selectedCard is EntityCard entityCard)
-                                        {
-                                            Destroy(entityCard.curEntity);
-                                            if (!selectedCard.needToWait)
-                                            {
-                                                SwitchPhase();
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (selectedCard != null)
-                    {
-                        if (selectedCard is EntityCard _entityCard)
-                        {
-                            Destroy(_entityCard.curEntity);
-                        }
-                        selectedCard.isSelected = false;
-                        selectedCard = null;
-                    }
-                }
-                if (playingAnimationCounter == 0)
-                {
-                    CheckDieEntity();
-                }
-                if (turnPhase == TurnPhase.DrawCard)
-                {
-                    int drawCardCount = (currentTurn == 1) ? 5 : 1;
-                    if (gameMode == GameMode.Online)
-                    {
-                        if (IsServer)
-                        {
-
-                            if (myHero.turnOrder == 0)
-                            {
-                                for (int i = 0; i < drawCardCount; i++)
-                                {
-                                    DrawCardServerRpc(myHero.faction);
-                                    DrawCardServerRpc(enemyHero.faction);
-                                }
-                            }
-                            else
-                            {
-                                for (int i = 0; i < drawCardCount; i++)
-                                {
-                                    DrawCardServerRpc(enemyHero.faction);
-                                    DrawCardServerRpc(myHero.faction);
-                                }
-                            }
-                            SwitchPhaseClientRpc();
-                        }
-                    }
-                    else
-                    {
-                        if (myHero.turnOrder == 0)
-                        {
-                            for (int i = 0; i < drawCardCount; i++)
-                            {
-                                myHandCards.DrawFrom(myDeck);
-                                enemyHandCards.DrawFrom(enemyDeck);
-                            }
-                        }
-                        else
-                        {
-                            for (int i = 0; i < drawCardCount; i++)
-                            {
-                                enemyHandCards.DrawFrom(enemyDeck);
-                                myHandCards.DrawFrom(myDeck);
-                            }
-                        }
-                        SwitchPhase();
-                    }
-                }
-                else if (turnPhase == TurnPhase.End) //回合结束 -> 开始
-                {
-                    foreach (Line line in lines)
-                    {
-                        line.EndTurn();
-                        if (!line.mySlot.Empty)
-                        {
-                            if (line.mySlot.FirstEntity != null && line.mySlot.FirstEntity.Atk != 0)
-                            {
-                                line.mySlot.FirstEntity.ReadyToAttack = true;
-                                line.mySlot.FirstEntity.counterAttackCount = 1;
-                            }
-                            if (line.mySlot.SecondEntity != null && line.mySlot.SecondEntity.Atk != 0)
-                            {
-                                line.mySlot.SecondEntity.ReadyToAttack = true;
-                                line.mySlot.SecondEntity.counterAttackCount = 1;
-                            }
-                        }
-                        if (!line.enemySlot.Empty)
-                        {
-                            if (line.enemySlot.FirstEntity != null && line.enemySlot.FirstEntity.Atk != 0)
-                            {
-                                line.enemySlot.FirstEntity.ReadyToAttack = true;
-                                line.enemySlot.FirstEntity.counterAttackCount = 1;
-                            }
-                            if (line.enemySlot.SecondEntity != null && line.enemySlot.SecondEntity.Atk != 0)
-                            {
-                                line.enemySlot.SecondEntity.ReadyToAttack = true;
-                                line.enemySlot.SecondEntity.counterAttackCount = 1;
-                            }
-                        }
-                    }
-                    turnPhase = TurnPhase.DrawCard;
-                    currentTurn++;
-                    BattleFieldSceneManager.Instance.currentTurnText.text = $"当前回合：{currentTurn}";
-                    myHero.endTurn = false;
-                    enemyHero.endTurn = false;
-                    myHero.totalPoint = currentTurn;
-                    enemyHero.totalPoint = currentTurn;
-                    OnTurnStartEvent?.Invoke();
-                }
-                break; //case UIState.GamePlay
-        }
-    }
-    [ServerRpc(RequireOwnership = false)]
-    public void SwitchPhaseServerRpc()
-    {
-        SwitchPhaseClientRpc();
-    }
-    [ClientRpc]
-    public void SwitchPhaseClientRpc()
-    {
-        if (turnPhase == TurnPhase.DrawCard)
-        {
-            if (myHero.turnOrder == 0)
+            if (myHero == null || !decideTurnOrderComplete) return;
+            if (myHero.health == 0 || enemyHero.health == 0)
             {
-                turnPhase = TurnPhase.MyTurn;
-                BattleFieldSceneManager.Instance.ShowTurnPhase("我方行动");
-                OnMyHeroTurnBeginEvent?.Invoke();
+                EndGame();
             }
-            else
+            ActionSequence.Update();
+            if (!ActionSequence.HasAction<AttackAction>())
             {
-                turnPhase = TurnPhase.EnemyTurn;
-                BattleFieldSceneManager.Instance.ShowTurnPhase("对方行动");
-                OnEnemyHeroTurnBeginEvent?.Invoke();
+                CheckDieEntity();
             }
-        }
-        else if (turnPhase == TurnPhase.MyTurn && !enemyHero.endTurn)
-        {
-            turnPhase = TurnPhase.EnemyTurn;
-            BattleFieldSceneManager.Instance.ShowTurnPhase("对方行动");
-            OnEnemyHeroTurnBeginEvent?.Invoke();
-        }
-        else if (turnPhase == TurnPhase.EnemyTurn && !myHero.endTurn)
-        {
-            turnPhase = TurnPhase.MyTurn;
-            BattleFieldSceneManager.Instance.ShowTurnPhase("我方行动");
-            OnMyHeroTurnBeginEvent?.Invoke();
+            if (turnStateMachine.currentState is DrawCardState && ActionSequence.Empty())
+            {
+                SwitchPhase();
+            }
+            else if (Game.State is EndTurnState)
+            {
+                turnStateMachine.SwitchState<DrawCardState>();
+            }
         }
     }
     public void SwitchPhase()
     {
-        if (turnPhase == TurnPhase.DrawCard)
+        if (Game.State is DrawCardState)
         {
             if (myHero.turnOrder == 0)
             {
-                turnPhase = TurnPhase.MyTurn;
-                BattleFieldSceneManager.Instance.ShowTurnPhase("我方行动");
-                OnMyHeroTurnBeginEvent?.Invoke();
+                turnStateMachine.SwitchState<MyTurnState>();
             }
             else
             {
-                turnPhase = TurnPhase.EnemyTurn;
-                BattleFieldSceneManager.Instance.ShowTurnPhase("对方行动");
-                OnEnemyHeroTurnBeginEvent?.Invoke();
+                turnStateMachine.SwitchState<EnemyTurnState>();
             }
         }
-        else if (turnPhase == TurnPhase.MyTurn && !enemyHero.endTurn)
+        else if (Game.State is MyTurnState)
         {
-            turnPhase = TurnPhase.EnemyTurn;
-            BattleFieldSceneManager.Instance.ShowTurnPhase("对方行动");
-            OnEnemyHeroTurnBeginEvent?.Invoke();
+            if (enemyHero.endTurn)
+            {
+                turnStateMachine.SwitchState<MyTurnState>();
+            }
+            else
+            {
+                turnStateMachine.SwitchState<EnemyTurnState>();
+            }
+
         }
-        else if (turnPhase == TurnPhase.EnemyTurn && !myHero.endTurn)
+        else if (Game.State is EnemyTurnState)
         {
-            turnPhase = TurnPhase.MyTurn;
-            BattleFieldSceneManager.Instance.ShowTurnPhase("我方行动");
-            OnMyHeroTurnBeginEvent?.Invoke();
+            if (myHero.endTurn)
+            {
+                turnStateMachine.SwitchState<EnemyTurnState>();
+            }
+            else
+            {
+                turnStateMachine.SwitchState<MyTurnState>();
+            }
         }
-    }
-    public void OnStartHostBtnClick()
-    {
-        if (NetworkManager.StartHost())
-        {
-            Debug.Log("Start Host Success!");
-            gameMode = GameMode.Online;
-            gameState = UIState.SelectCard;
-            Debug.Log(NetworkManager.GetComponent<UnityTransport>().ConnectionData.Address);
-            Debug.Log(NetworkManager.GetComponent<UnityTransport>().ConnectionData.Port);
-            StartCoroutine(SceneLoader.Instance.LoadScene("Select Card"));
-        }
-        else
-        {
-            Debug.Log("Start Host Failed!");
-        }
-    }
-    public void OnStartClientBtnClick()
-    {
-        if (NetworkManager.StartClient())
-        {
-            Debug.Log("Start Client Success!");
-            gameMode = GameMode.Online;
-            gameState = UIState.SelectCard;
-            Debug.Log(NetworkManager.GetComponent<UnityTransport>().ConnectionData.Address);
-            Debug.Log(NetworkManager.GetComponent<UnityTransport>().ConnectionData.Port);
-            StartCoroutine(SceneLoader.Instance.LoadScene("Select Card"));
-        }
-        else
-        {
-            Debug.Log("Start Client Failed!");
-        }
+        Debug.Log($"myhero.endturn: {myHero.endTurn} enenmyHero.endturn : {enemyHero.endTurn} turnState: {State.GetType()}");
     }
     public void OnStartOfflineBtnClick()
     {
-        Debug.Log("Start Offline Success!");
+        AudioManager.Instance.PlaySFX("ButtonClick");
         gameMode = GameMode.Offline;
-        gameState = UIState.SelectCard;
-        StartCoroutine(SceneLoader.Instance.LoadScene("Select Card"));
+        gameState = GameState.SelectCard;
+        SceneManager.LoadScene("Select Card");
     }
     public void OnStartGameBtnClick()
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         if (gameMode == GameMode.Online)
         {
             if (IsHost && readyPlayerNumber == 2)
             {
-                selectCardSceneManager.startGameButton.enabled = false;
+                InitRandomSeedServerRpc();
                 StartGameClientRpc();
             }
         }
@@ -325,6 +127,7 @@ public class GameManager : NetworkBehaviour
     }
     public void OnGetReadyBtnClick()
     {
+        AudioManager.Instance.PlaySFX("ButtonClick");
         if (IsServer)
         {
             GetReadyClientRpc();
@@ -333,7 +136,6 @@ public class GameManager : NetworkBehaviour
         {
             GetReadyServerRpc();
         }
-        selectCardSceneManager.getReadyButton.enabled = false;
     }
     [ClientRpc]
     private void GetReadyClientRpc()
@@ -345,80 +147,21 @@ public class GameManager : NetworkBehaviour
     {
         GetReadyClientRpc();
     }
-    public void OnEndTurnBtnClick()
-    {
-        if (gameMode == GameMode.Online)
-        {
-            if (turnPhase == TurnPhase.MyTurn)
-            {
-                EndTurnServerRpc(myHero.faction);
-                SwitchPhaseServerRpc();
-            }
-        }
-        else
-        {
-            if (turnPhase == TurnPhase.MyTurn)
-            {
-                MyHeroEndTurn();
-            }
-        }
-    }
-    [ServerRpc(RequireOwnership = false)]
-    private void EndTurnServerRpc(Faction faction)
-    {
-        EndTurnClientRpc(faction);
-    }
-    [ClientRpc]
-    private void EndTurnClientRpc(Faction faction)
+    public void EndTurn(Faction faction)
     {
         GetHero(faction).endTurn = true;
         if (GetOpponentHero(faction).endTurn == false)
         {
             GetHero(faction).turnOrder = 0;
             GetOpponentHero(faction).turnOrder = 1;
+            ActionSequence.actionSequence.AddFirst(new SwitchPhaseAction());
         }
         else
         {
             GetHero(faction).turnOrder = 1;
             GetOpponentHero(faction).turnOrder = 0;
-            turnPhase = TurnPhase.End;
+            turnStateMachine.SwitchState<EndTurnState>();
         }
-    }
-    public void MyHeroEndTurn()
-    {
-        myHero.endTurn = true;
-        if (enemyHero.endTurn == false)
-        {
-            myHero.turnOrder = 0;
-            enemyHero.turnOrder = 1;
-        }
-        else
-        {
-            myHero.turnOrder = 1;
-            enemyHero.turnOrder = 0;
-            turnPhase = TurnPhase.End;
-            EnemyAI.Instance.hasApplicableCard = true;
-            EnemyAI.Instance.hasReadyToAttackEntity = true;
-        }
-        SwitchPhase();
-    }
-    public void EnemyHeroEndTurn()
-    {
-        enemyHero.endTurn = true;
-        if (myHero.endTurn == false)
-        {
-            enemyHero.turnOrder = 0;
-            myHero.turnOrder = 1;
-        }
-        else
-        {
-            enemyHero.turnOrder = 1;
-            myHero.turnOrder = 0;
-            turnPhase = TurnPhase.End;
-            EnemyAI.Instance.hasApplicableCard = true;
-            EnemyAI.Instance.hasReadyToAttackEntity = true;
-        }
-        SwitchPhase();
     }
     public void OnSwitchHeroBtnClick()
     {
@@ -446,7 +189,11 @@ public class GameManager : NetworkBehaviour
         }
         else
         {
-            StartCoroutine(SceneLoader.Instance.LoadScene("Main Menu"));
+            if (gameObject.TryGetComponent<EnemyAI>(out var enemyAI))
+            {
+                Destroy(enemyAI);
+            }
+            SceneManager.LoadScene("Main Menu");
         }
     }
     [ServerRpc(RequireOwnership = false)]
@@ -458,7 +205,7 @@ public class GameManager : NetworkBehaviour
     private void BackToMainMenuClientRpc()
     {
         NetworkManager.Singleton.Shutdown();
-        StartCoroutine(SceneLoader.Instance.LoadScene("Main Menu"));
+        SceneManager.LoadScene("Main Menu");
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -469,10 +216,10 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void SwitchHeroClientRpc()
     {
-        myHeroFaction = (myHeroFaction == Faction.Plant) ? Faction.Zombie : Faction.Plant;
+        tempFaction = (tempFaction == Faction.Plant) ? Faction.Zombie : Faction.Plant;
         CardLibrary.Clear();
         myDeck.Clear();
-        if (myHeroFaction == Faction.Plant)
+        if (tempFaction == Faction.Plant)
         {
             CardLibrary.LoadPlant();
         }
@@ -483,10 +230,10 @@ public class GameManager : NetworkBehaviour
     }
     private void SwitchHero()
     {
-        myHeroFaction = (myHeroFaction == Faction.Plant) ? Faction.Zombie : Faction.Plant;
+        tempFaction = (tempFaction == Faction.Plant) ? Faction.Zombie : Faction.Plant;
         CardLibrary.Clear();
         myDeck.Clear();
-        if (myHeroFaction == Faction.Plant)
+        if (tempFaction == Faction.Plant)
         {
             CardLibrary.LoadPlant();
         }
@@ -498,7 +245,7 @@ public class GameManager : NetworkBehaviour
     [ClientRpc]
     private void StartGameClientRpc()
     {
-        gameState = UIState.GamePlay;
+        gameState = GameState.GamePlay;
         deckInfo = ScriptableObject.CreateInstance<DeckInfo>();
         deckInfo.myCardID = new List<int>();
         deckInfo.enemyCardID = new List<int>();
@@ -506,13 +253,13 @@ public class GameManager : NetworkBehaviour
         {
             deckInfo.myCardID.Add(_card.ID);
         }
-        deckInfo.faction = myHeroFaction;
+        deckInfo.faction = tempFaction;
         TransmitDeckInfoServerRpc(deckInfo.myCardID.ToArray(), IsServer);
-        StartCoroutine(SceneLoader.Instance.LoadScene("Battle Field"));
+        SceneLoader.Instance.LoadSceneAsync("Battle Field");
     }
     private void StartGame()
     {
-        gameState = UIState.GamePlay;
+        gameState = GameState.GamePlay;
         deckInfo = ScriptableObject.CreateInstance<DeckInfo>();
         deckInfo.myCardID = new List<int>();
         deckInfo.enemyCardID = new List<int>();
@@ -520,7 +267,7 @@ public class GameManager : NetworkBehaviour
         {
             deckInfo.myCardID.Add(card.ID);
         }
-        int index = (myHeroFaction == Faction.Plant) ? 2 : 1;
+        int index = (tempFaction == Faction.Plant) ? 2 : 1;
         for (int i = 1; i <= CardDictionary.card.Count(kvp => kvp.Key / 10000 == index); i++)
         {
             for (int j = 0; j < 4; j++)
@@ -528,9 +275,8 @@ public class GameManager : NetworkBehaviour
                 deckInfo.enemyCardID.Add(10000 * index + i);
             }
         }
-        deckInfo.faction = myHeroFaction;
-        StartCoroutine(SceneLoader.Instance.LoadScene("Battle Field"));
-        selectCardSceneManager.startGameButton.enabled = false;
+        deckInfo.faction = tempFaction;
+        SceneManager.LoadScene("Battle Field");
     }
     [ServerRpc(RequireOwnership = false)]
     private void TransmitDeckInfoServerRpc(int[] cardID, bool isServer)
@@ -550,99 +296,64 @@ public class GameManager : NetworkBehaviour
     }
     public void LoadMainMenuScene()
     {
-        gameState = UIState.MainMenu;
+        gameState = GameState.MainMenu;
         gameMode = GameMode.Offline;
-        NetworkManager.OnClientConnectedCallback += (id) =>
-        {
-            Debug.Log("A new client connected, id = " + id);
-        };
-        NetworkManager.OnClientDisconnectCallback += (id) =>
-        {
-            Debug.Log("A new client disconnected, id = " + id);
-        };
-        NetworkManager.OnServerStarted += () =>
-        {
-            Debug.Log("Server Start!");
-        };
-        CardDictionary.Init();
-        SpriteManager.Init();
-        AudioManager.Instance.Init();
     }
-    public void LoadSelectCardScene()
+    public void LoadSelectCardScene(SelectCardPanel selectCardPanel)
     {
-        selectCardSceneManager = GameObject.Find("SceneManager").GetComponent<SelectCardSceneManager>();
-        myDeck = FindAnyObjectByType<Deck>();
+        myDeck = selectCardPanel.myDeck;
         if (gameMode == GameMode.Online)
         {
             if (IsHost)
             {
-                myHeroFaction = Faction.Plant;
+                tempFaction = Faction.Plant;
                 CardLibrary.LoadPlant();
             }
             else
             {
-                myHeroFaction = Faction.Zombie;
+                tempFaction = Faction.Zombie;
                 CardLibrary.LoadZombie();
-                selectCardSceneManager.startGameButton.enabled = false;
             }
         }
         else
         {
-            myHeroFaction = Faction.Plant;
+            tempFaction = Faction.Plant;
             CardLibrary.LoadPlant();
         }
-        AudioManager.Instance.Play(1);
+
     }
-    public void LoadBattleFieldScene()
+    public void LoadBattleFieldScene(BattleFieldPanel battleFieldPanel, HandCardsPanel handCardsPanel)
     {
-        selectedCard = null;
-        currentTurn = 1;
-        BattleFieldSceneManager.Instance.currentTurnText.text = $"当前回合：{currentTurn}";
-        lineCount = 5;
-        lines = new Line[5];
-        turnPhase = TurnPhase.DrawCard;
-        myHero = GameObject.Find("My Hero").GetComponent<Hero>();
-        enemyHero = GameObject.Find("Enemy Hero").GetComponent<Hero>();
-        enemyDeck = GameObject.Find("Enemy Hero").GetComponent<Deck>();
-        myDeck = GameObject.Find("My Hero").GetComponent<Deck>();
-        enemyHandCards = GameObject.Find("Enemy Hero").GetComponent<HandCards>();
-        myHandCards = GameObject.Find("Hand Cards").GetComponent<HandCards>();
-        myHero.totalPoint = 1;
-        enemyHero.totalPoint = 1;
+        SelectedCard = null;
+        currentTurn = 0;
+        lines = new Line[lineCount];
+        ActionSequence.Init();
+        myHero = battleFieldPanel.myHero;
+        enemyHero = battleFieldPanel.enemyHero;
+        myDeck = battleFieldPanel.myDeck;
+        enemyDeck = battleFieldPanel.enemyDeck;
+        enemyHandCards = battleFieldPanel.enemyHandCards;
+        myHandCards = handCardsPanel.myHandCards;
         myHero.faction = deckInfo.faction;
         enemyHero.faction = (deckInfo.faction == Faction.Plant) ? Faction.Zombie : Faction.Plant;
         foreach (int id in deckInfo.myCardID)
         {
-            Card _card = Instantiate(CardDictionary.card[id]).GetComponent<Card>();
-            _card.location = Card.Location.InDeck;
-            myDeck.Add(_card);
+            myDeck.Add(id);
         }
         foreach (int id in deckInfo.enemyCardID)
         {
-            Card _card = Instantiate(CardDictionary.card[id]).GetComponent<Card>();
-            _card.location = Card.Location.InDeck;
-            enemyDeck.Add(_card);
+            enemyDeck.Add(id);
         }
         for (int i = 0; i < lineCount; i++)
         {
             lines[i] = GameObject.Find($"Line{i + 1}").GetComponent<Line>();
-            lines[i].index = i;
-            lines[i].mySlot.lineIndex = i;
-            lines[i].enemySlot.lineIndex = i;
-            lines[i].mySlot.faction = myHero.faction;
-            lines[i].enemySlot.faction = enemyHero.faction;
+            lines[i].mySlot.Faction = myHero.faction;
+            lines[i].enemySlot.Faction = enemyHero.faction;
         }
-        lines[0].terrain = Line.LineTerrain.Highland;
-        for (int i = 1; i <= 3; i++)
-        {
-            lines[i].terrain = Line.LineTerrain.Plain;
-        }
-        lines[4].terrain = Line.LineTerrain.Water;
         if (gameMode == GameMode.Online)
         {
             if (IsServer)
             {
-                InitRandomSeedServerRpc();
                 DecideTurnOrderServerRpc();
             }
         }
@@ -651,18 +362,24 @@ public class GameManager : NetworkBehaviour
             myHero.turnOrder = (Random.value > 0.5f) ? 1 : 0;
             enemyHero.turnOrder = myHero.turnOrder ^ 1;
             decideTurnOrderComplete = true;
-            gameObject.AddComponent<EnemyAI>();
+            if (!gameObject.TryGetComponent<EnemyAI>(out var enemyAI))
+            {
+                gameObject.AddComponent<EnemyAI>();
+            }
         }
-        if (myHero.faction == Faction.Plant)
-        {
-            BattleFieldSceneManager.Instance.handCardsImage.sprite = SpriteManager.plantHandCardsSprite;
-        }
-        else
-        {
-            BattleFieldSceneManager.Instance.handCardsImage.sprite = SpriteManager.zombieHandCardsSprite;
-        }
-        EndGameMenu.Instance.gameObject.SetActive(false);
-        AudioManager.Instance.Play(2);
+        turnStateMachine.SwitchState<DrawCardState>();
+    }
+    [ServerRpc(RequireOwnership = false)]
+    public void AddActionServerRpc(GameAction.Type type, int[] args)
+    {
+        AddActionClientRpc(type, args);
+    }
+    [ClientRpc]
+    public void AddActionClientRpc(GameAction.Type type, int[] args)
+    {
+        Type _type = System.Type.GetType(GameAction.stringDict[type]);
+        GameAction gameAction = System.Activator.CreateInstance(_type, args) as GameAction;
+        ActionSequence.actionSequence.AddLast(gameAction);
     }
     [ServerRpc]
     private void InitRandomSeedServerRpc()
@@ -694,105 +411,42 @@ public class GameManager : NetworkBehaviour
         }
         decideTurnOrderComplete = true;
     }
-    [ServerRpc(RequireOwnership = false)]
-    public void DrawCardServerRpc(Faction faction)
+    public void PlaceEntity(Entity entity, Collider2D collider)
     {
-        DrawCardClientRpc(faction);
-    }
-    [ClientRpc]
-    public void DrawCardClientRpc(Faction faction)
-    {
-        GetHandCards(faction).DrawFrom(GetDeck(faction));
-    }
-    [ServerRpc(RequireOwnership = false)]
-    public void ApplyCardServerRpc(Faction faction, int index, int colliderID)
-    {
-        ApplyCardClientRpc(faction, index, colliderID);
-    }
-    [ClientRpc]
-    public void ApplyCardClientRpc(Faction faction, int index, int colliderID)
-    {
-        GetHandCards(faction).cardList[index].ApplyFor(ColliderManager.colliders[colliderID]);
-    }
-    [ServerRpc(RequireOwnership = false)]
-    public void EntityAttackServerRpc(Faction faction, int lineIndex, int position)
-    {
-        EntityAttackClientRpc(faction, lineIndex, position);
-    }
-    [ClientRpc]
-    public void EntityAttackClientRpc(Faction faction, int lineIndex, int position)
-    {
-        lines[lineIndex].GetSlot(faction).entities[position].Attack();
-    }
-    [ServerRpc(RequireOwnership = false)]
-    public void MoveEntityServerRpc(Faction faction, int entityLineIndex, int entityPosition, int targetColliderID)
-    {
-        MoveEntityClientRpc(faction, entityLineIndex, entityPosition, targetColliderID);
-    }
-    [ClientRpc]
-    public void MoveEntityClientRpc(Faction faction, int entityLineIndex, int entityPosition, int targetColliderID)
-    {
-        MoveEntity(lines[entityLineIndex].GetSlot(faction).entities[entityPosition], ColliderManager.colliders[targetColliderID]);
-    }
-    public void MoveEntity(Entity selectedEntity, Collider2D collider)
-    {
-        Slot targetSlot = collider.GetComponentInParent<Slot>();
-        if (targetSlot == selectedEntity.slot)
+        Slot slot = collider.GetComponentInParent<Slot>();
+        entity.slot = slot;
+        if (slot.Empty)
         {
-            Entity anotherEntity = targetSlot.GetEntity(collider);
-            anotherEntity.transform.SetParent(targetSlot.GetCollider(selectedEntity).transform, false);
-            selectedEntity.transform.SetParent(collider.transform, false);
-            (targetSlot.SecondEntity, targetSlot.FirstEntity) = (targetSlot.FirstEntity, targetSlot.SecondEntity);
+            slot.FirstEntity = entity;
         }
-        else
+        else if (slot.FirstEntity != null)
         {
-            if (targetSlot.Empty)
+            if (collider == slot.FirstCollider)
             {
-                selectedEntity.slot.RemoveEntity(selectedEntity);
-                selectedEntity.slot = targetSlot;
-                selectedEntity.transform.SetParent(collider.transform, false);
-                targetSlot.FirstEntity = selectedEntity;
-            }
-            else if (targetSlot.FirstEntity != null)
-            {
-                if (collider == targetSlot.firstCollider)
-                {
-                    targetSlot.SecondEntity = targetSlot.FirstEntity;
-                    targetSlot.SecondEntity.transform.SetParent(targetSlot.secondCollider.transform, false);
-                    selectedEntity.slot.RemoveEntity(selectedEntity);
-                    selectedEntity.slot = targetSlot;
-                    selectedEntity.transform.SetParent(collider.transform, false);
-                    targetSlot.FirstEntity = selectedEntity;
-                }
-                else
-                {
-                    selectedEntity.slot.RemoveEntity(selectedEntity);
-                    selectedEntity.slot = targetSlot;
-                    selectedEntity.transform.SetParent(collider.transform, false);
-                    targetSlot.SecondEntity = selectedEntity;
-                }
+                slot.SecondEntity = slot.FirstEntity;
+                slot.SecondEntity.transform.SetParent(slot.SecondCollider.transform, false);
+                slot.FirstEntity = entity;
             }
             else
             {
-                if (collider == targetSlot.secondCollider)
-                {
-                    targetSlot.FirstEntity = targetSlot.SecondEntity;
-                    targetSlot.FirstEntity.transform.SetParent(targetSlot.firstCollider.transform, false);
-                    selectedEntity.slot.RemoveEntity(selectedEntity);
-                    selectedEntity.slot = targetSlot;
-                    selectedEntity.transform.SetParent(collider.transform, false);
-                    targetSlot.SecondEntity = selectedEntity;
-                }
-                else
-                {
-                    selectedEntity.slot.RemoveEntity(selectedEntity);
-                    selectedEntity.slot = targetSlot;
-                    selectedEntity.transform.SetParent(collider.transform, false);
-                    targetSlot.FirstEntity = selectedEntity;
-                }
+                slot.SecondEntity = entity;
             }
         }
-        OnMoveEntityCompleteEvent?.Invoke();
+        else
+        {
+            if (collider == slot.FirstCollider)
+            {
+                slot.FirstEntity = entity;
+            }
+            else
+            {
+                slot.FirstEntity = slot.SecondEntity;
+                slot.FirstEntity.transform.SetParent(slot.FirstCollider.transform, false);
+                slot.SecondEntity = entity;
+            }
+        }
+        entity.Place();
+        OnPlaceEntityEvent?.Invoke(entity);
     }
     public void CheckDieEntity()
     {
@@ -829,135 +483,109 @@ public class GameManager : NetworkBehaviour
     }
     public void EndGame()
     {
-        gameState = UIState.GameOver;
-        EndGameMenu.Instance.gameObject.SetActive(true);
+        gameState = GameState.GameOver;
+        var endGamePanel = UIManager.Instance.OpenPanel<EndGamePanel>();
         if (enemyHero.health == 0)
         {
-            EndGameMenu.Instance.text.text = "你赢了";
-            AudioManager.Instance.Play(3);
+            endGamePanel.winOrLoseText.text = "你赢了";
+            AudioManager.Instance.PlayBGM("GameWon");
         }
         else
         {
-            EndGameMenu.Instance.text.text = "你输了";
-            AudioManager.Instance.Play(4);
+            endGamePanel.winOrLoseText.text = "你输了";
+            AudioManager.Instance.PlayBGM("Lost");
         }
     }
-    public Hero GetHero(Faction faction)
+    public Hero GetHero(Faction faction) => (faction == myHero.faction) ? myHero : enemyHero;
+    public Hero GetOpponentHero(Faction faction) => (faction == myHero.faction) ? enemyHero : myHero;
+    public Deck GetDeck(Faction faction) => (faction == myHero.faction) ? myDeck : enemyDeck;
+    public HandCards GetHandCards(Faction faction) => (faction == myHero.faction) ? myHandCards : enemyHandCards;
+    public void OnTurnStart()
     {
-        if (faction == myHero.faction)
-        {
-            return myHero;
-        }
-        else
-        {
-            return enemyHero;
-        }
+        OnTurnStartEvent?.Invoke();
     }
-    public Hero GetOpponentHero(Faction faction)
+    public void OnMyHeroTurnStart()
     {
-        if (faction == myHero.faction)
-        {
-            return enemyHero;
-        }
-        else
-        {
-            return myHero;
-        }
+        OnMyHeroTurnStartEvent?.Invoke();
     }
-    public Deck GetDeck(Faction faction)
+    public void OnEnemyHeroTurnStart()
     {
-        if (faction == myHero.faction)
-        {
-            return myDeck;
-        }
-        else
-        {
-            return enemyDeck;
-        }
+        OnEnemyHeroTurnStartEvent?.Invoke();
     }
-    public HandCards GetHandCards(Faction faction)
+    public void OnEndTurn()
     {
-        if (faction == myHero.faction)
-        {
-            return myHandCards;
-        }
-        else
-        {
-            return enemyHandCards;
-        }
+        OnEndTurnEvent?.Invoke();
     }
-    public enum UIState
+    public void OnApplyCard(Card card)
     {
-        MainMenu,
-        SelectCard,
-        GamePlay,
-        GameOver
-    };
-    public enum GameMode
-    {
-        Offline,
-        Online
+        OnApplyCardEvent?.Invoke(card);
     }
-    public enum TurnPhase
+    public void OnMoveEntityComplete()
     {
-        DrawCard,
-        MyTurn,
-        EnemyTurn,
-        End
+        OnMoveEntityCompleteEvent?.Invoke();
     }
-    public enum Faction
+    public void Quit()
     {
-        Plant,
-        Zombie
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
     }
-    public enum Tag
-    {
-        Pea, Flower, Nut, Berry, Greenery, Athlete, Pet
-    }
-    static public int readyPlayerNumber;
-    static public TurnPhase turnPhase;
-    static public UIState gameState;
-    static public GameMode gameMode;
-    static public Hero myHero;
-    static public Hero enemyHero;
-    static public Faction myHeroFaction;
-    static public Deck myDeck;
-    static public Deck enemyDeck;
-    static public HandCards myHandCards;
-    static public HandCards enemyHandCards;
     public DeckInfo deckInfo;
-    static public Line[] lines;
-    static public int lineCount;
-    static public int currentTurn;
-    static public bool decideTurnOrderComplete;
+    static private bool decideTurnOrderComplete;
     static public Card selectedCard;
-    static public SelectCardSceneManager selectCardSceneManager;
-    static public SceneLoader sceneLoader;
+    static public Card SelectedCard
+    {
+        get => selectedCard;
+        set
+        {
+            if (selectedCard != null)
+            {
+                if (selectedCard is EntityCard entityCard)
+                {
+                    Destroy(entityCard.curEntity);
+                }
+                selectedCard.CencelSelect();
+            }
+            selectedCard = value;
+            if (selectedCard != null)
+            {
+                selectedCard.Select();
+            }
+        }
+    }
     static public event Action OnTurnStartEvent;
     static public event Action OnMoveEntityCompleteEvent;
-    static public event Action OnMyHeroTurnBeginEvent;
-    static public event Action OnEnemyHeroTurnBeginEvent;
-    static public void AddTurnBeginEvent(Faction faction, Action action)
+    static public event Action OnMyHeroTurnStartEvent;
+    static public event Action OnEndTurnEvent;
+    static public event Action OnEnemyHeroTurnStartEvent;
+    static public event Action<Card> OnApplyCardEvent;
+    static public event PlaceEntityHandler OnPlaceEntityEvent;
+    public delegate void PlaceEntityHandler(Entity entity);
+    static public void AddTurnStartEvent(Faction faction, Action action)
     {
         if (faction == myHero.faction)
         {
-            OnMyHeroTurnBeginEvent += action;
+            OnMyHeroTurnStartEvent += action;
         }
         else
         {
-            OnEnemyHeroTurnBeginEvent += action;
+            OnEnemyHeroTurnStartEvent += action;
         }
     }
-    static public void RemoveTurnBeginEvent(Faction faction, Action action)
+    static public void RemoveTurnStartEvent(Faction faction, Action action)
     {
         if (faction == myHero.faction)
         {
-            OnMyHeroTurnBeginEvent -= action;
+            OnMyHeroTurnStartEvent -= action;
         }
         else
         {
-            OnEnemyHeroTurnBeginEvent -= action;
+            OnEnemyHeroTurnStartEvent -= action;
         }
     }
     static public int playingAnimationCounter;
+    static public bool hasDrawnCard;
+    static public Faction tempFaction;
 }
