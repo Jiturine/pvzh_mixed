@@ -31,6 +31,7 @@ public class RollingStone : TrickCard
     }
     public override void ApplyFor(Collider2D collider)
     {
+        CardTracker.Instance.Add(new CardTracker.CardApplyAction(this, collider, CardTracker.CardApplyAction.TargetType.Entity));
         Slot slot = collider.GetComponentInParent<Slot>();
         slot.GetEntity(collider).Die();
         base.ApplyFor(collider);

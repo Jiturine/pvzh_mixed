@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Numerics;
 using Vector3 = UnityEngine.Vector3;
 using UnityEngine.UIElements;
+using UnityEngine.Timeline;
 
 public class Entity : Interactable
 {
@@ -45,44 +46,48 @@ public class Entity : Interactable
     }
     virtual public void Place()
     {
-        if (!abilities.Contains<Gravestone>() && HasBattlecry)
+        if (HasBattlecry)
         {
-            ActionSequence.AddAction(new BattlecryAction(this));
+            ActionSequence.actionSequence.AddLast(new BattlecryAction(this));
+        }
+        if (slot.Line.terrain == Line.Terrain.Water)
+        {
+            AudioManager.Instance.PlaySFX("PlaceInWater");
+        }
+        else if (faction == Faction.Plant)
+        {
+            AudioManager.Instance.PlaySFX("PlacePlant");
+        }
+        else
+        {
+            AudioManager.Instance.PlaySFX("PlaceZombie");
         }
     }
 
     virtual public void Battlecry() { }
     virtual public void CounterAttack()
     {
-        if (abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false) return;
         counterAttackCount--;
         SetAttackAnimation();
         Timer.Register(0.5f, () =>
     {
         if (!slot.OpponentSlot.Empty)
         {
-            Entity attackEntity = slot.OpponentSlot.FrontEntity;
-            DoDamage(attackEntity, atk);
+            Entity targetEntity = slot.OpponentSlot.FrontEntity;
+            DoDamage(targetEntity, atk);
+            CardTracker.Instance.Add(new CardTracker.EntityAttackAction(this, null, targetEntity));
         }
         else
         {
             if (!abilities.Contains<Bullseye>())
             {
-                int increaseShield = Random.Range(1, 4);
-                if (increaseShield + OpponentHero.Shield >= 10)
-                {
-                    OpponentHero.Shield = 0;
-                }
-                else
-                {
-                    OpponentHero.Shield += increaseShield;
-                    DoDamage(OpponentHero, atk);
-                }
+                DoDamage(OpponentHero, atk, bullseye: false);
             }
             else
             {
-                DoDamage(OpponentHero, atk);
+                DoDamage(OpponentHero, atk, bullseye: true);
             }
+            CardTracker.Instance.Add(new CardTracker.EntityAttackAction(this, OpponentHero));
         }
     });
     }
@@ -90,60 +95,45 @@ public class Entity : Interactable
     {
         ReadyToAttack = false;
         SetAttackAnimation();
-        Debug.Log($" {slot.OpponentSlot == null} {slot.OpponentSlot.FrontEntity == null}");
-        if (!slot.OpponentSlot.Empty && slot.OpponentSlot.FrontEntity.abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
+        Timer.Register(0.5f, () =>
+    {
+        if (!slot.OpponentSlot.Empty)
         {
-            return;
+            Entity targetEntity = slot.OpponentSlot.FrontEntity;
+            DoDamage(targetEntity, atk);
+            CardTracker.Instance.Add(new CardTracker.EntityAttackAction(this, null, targetEntity));
+            if (targetEntity.counterAttackCount > 0 && !abilities.Contains<NoCounterAttack>())
+            {
+                targetEntity.CounterAttack();
+            }
         }
         else
         {
-            Timer.Register(0.5f, () =>
-        {
-            if (!slot.OpponentSlot.Empty)
+            if (!abilities.Contains<Bullseye>())
             {
-                Entity attackEntity = slot.OpponentSlot.FrontEntity;
-                DoDamage(attackEntity, atk);
-                if (attackEntity.counterAttackCount > 0 && !abilities.Contains<NoCounterAttack>())
-                {
-                    attackEntity.CounterAttack();
-                }
+                DoDamage(OpponentHero, atk, bullseye: false);
             }
             else
             {
-                if (!abilities.Contains<Bullseye>())
-                {
-                    int increaseShield = Random.Range(1, 4);
-                    if (increaseShield + OpponentHero.Shield >= 10)
-                    {
-                        OpponentHero.Shield = 0;
-                    }
-                    else
-                    {
-                        OpponentHero.Shield += increaseShield;
-                        DoDamage(OpponentHero, atk);
-                    }
-                }
-                else
-                {
-                    DoDamage(OpponentHero, atk);
-                }
+                DoDamage(OpponentHero, atk, bullseye: true);
             }
-        });
+            CardTracker.Instance.Add(new CardTracker.EntityAttackAction(this, OpponentHero));
         }
+    });
     }
+
     virtual public void DoDamage(Entity entity, int atk)
     {
         int effectiveDamage = entity.TakeDamage(atk);
         DoDamageEvent?.Invoke(effectiveDamage);
     }
-    virtual public void DoDamage(Hero hero, int atk)
+    virtual public void DoDamage(Hero hero, int atk, bool bullseye = false)
     {
-        int effectiveDamage = hero.TakeDamage(atk);
+        int effectiveDamage = hero.TakeDamage(atk, bullseye);
         DoDamageEvent?.Invoke(effectiveDamage);
     }
     virtual public int TakeDamage(int damage)
     {
-        if (abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false) return 0;
         if (abilities.Contains<Armored>(out var armored))
         {
             damage -= armored.shield;
@@ -221,7 +211,8 @@ public class Entity : Interactable
         if (targetSlot == this.slot)
         {
             Entity anotherEntity = targetSlot.GetEntity(collider);
-            anotherEntity.transform.SetParent(targetSlot.GetCollider(this).transform);
+            anotherEntity.transform.SetParent(Pos.collider.transform);
+            StartCoroutine(anotherEntity.MoveTowards(Pos.collider.transform.position));
             this.transform.SetParent(collider.transform);
             (targetSlot.SecondEntity, targetSlot.FirstEntity) = (targetSlot.FirstEntity, targetSlot.SecondEntity);
         }
@@ -240,6 +231,7 @@ public class Entity : Interactable
                 {
                     targetSlot.SecondEntity = targetSlot.FirstEntity;
                     targetSlot.SecondEntity.transform.SetParent(targetSlot.SecondCollider.transform);
+                    StartCoroutine(targetSlot.SecondEntity.MoveTowards(targetSlot.SecondCollider.transform.position));
                     this.slot.RemoveEntity(this);
                     this.slot = targetSlot;
                     this.transform.SetParent(collider.transform);
@@ -259,6 +251,7 @@ public class Entity : Interactable
                 {
                     targetSlot.FirstEntity = targetSlot.SecondEntity;
                     targetSlot.FirstEntity.transform.SetParent(targetSlot.FirstCollider.transform);
+                    StartCoroutine(targetSlot.FirstEntity.MoveTowards(targetSlot.FirstCollider.transform.position));
                     this.slot.RemoveEntity(this);
                     this.slot = targetSlot;
                     this.transform.SetParent(collider.transform);
@@ -273,7 +266,6 @@ public class Entity : Interactable
                 }
             }
         }
-        Debug.Log($"original position:{originalPosition} transform.position : {transform.position}");
         transform.position = originalPosition;
         StartCoroutine(MoveTowards(Pos.transform.position));
     }
@@ -300,10 +292,6 @@ public class Entity : Interactable
     override public void OnPointerUp()
     {
         if (SelectedCard != null) return;
-        if (abilities.Contains<Gravestone>(out var gravestone) && !gravestone.outOfGrave)
-        {
-            return;
-        }
         if (Game.State is MyTurnState && faction == myHero.faction && ReadyToAttack)
         {
             ActionSequence.AddAction(new AttackAction(this));
@@ -344,13 +332,13 @@ public class Entity : Interactable
     protected Hero OpponentHero => (faction == myHero.faction) ? enemyHero : myHero;
     protected Hero AllyHero => (faction == myHero.faction) ? myHero : enemyHero;
     [HideInInspector] public bool readyToAttack;
-    public bool ReadyToAttack
+    virtual public bool ReadyToAttack
     {
         get => readyToAttack;
         set
         {
             readyToAttack = value;
-            if (readyToAttack && !(abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false))
+            if (readyToAttack)
             {
                 material.SetInt("_Enable", 1);
             }
@@ -362,12 +350,13 @@ public class Entity : Interactable
     }
     public int health;
     public int maxHealth;
-    public int Health
+    virtual public int Health
     {
         get => health;
         set
         {
             health = value;
+            if (health < 0) health = 0;
             if (health < maxHealth)
             {
                 healthRenderer.healthText.color = new Color(1.0f, 0.67f, 0.67f); // pink
@@ -386,12 +375,13 @@ public class Entity : Interactable
     }
     public int atk;
     public int maxAtk;
-    public int Atk
+    virtual public int Atk
     {
         get => atk;
         set
         {
             atk = value;
+            if (atk < 0) atk = 0;
             if (atk < maxAtk)
             {
                 atkRenderer.atkText.color = new Color(1.0f, 0.67f, 0.67f); // pink
@@ -411,11 +401,6 @@ public class Entity : Interactable
             else
             {
                 atkRenderer.ShowAtk();
-            }
-            if (abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
-            {
-                atkRenderer.HideAtk();
-                healthRenderer.HideHealth();
             }
             atkRenderer.atkText.text = atk.ToString();
             if (atk != 0) atkRenderer.AtkShake();
@@ -438,12 +423,12 @@ public class Entity : Interactable
         {
             abilities.Add(System.Activator.CreateInstance(System.Type.GetType(abilityName), this) as Ability);
         }
-        if (atk == 0 || abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
+        if (atk == 0)
         {
             atkRenderer.HideAtk();
         }
     }
-    public void SetInfo(EntityCard entityCard)
+    virtual public void SetInfo(EntityCard entityCard)
     {
         ID = entityCard.ID;
         faction = (ID / 10000 == 1) ? Faction.Plant : Faction.Zombie;

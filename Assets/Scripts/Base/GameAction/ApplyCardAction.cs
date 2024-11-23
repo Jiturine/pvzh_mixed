@@ -24,9 +24,13 @@ public class ApplyCardAction : GameAction
     }
     public override void Apply()
     {
-        if (!card.IsApplicableFor(collider)) return;
+        if (!card.IsApplicableFor(collider))
+        {
+            ended = true;
+            return;
+        }
+        base.Apply();
         card.ApplyFor(collider);
-        
         if (card is EntityCard)
         {
             ActionSequence.actionSequence.AddFirst(new SwitchPhaseAction());

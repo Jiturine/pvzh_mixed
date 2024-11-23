@@ -15,7 +15,11 @@ public class AudioManager : PersistentSingleton<AudioManager>
         {
             ["ButtonClick"] = Resources.Load<AudioClip>("AudioClip/SFX/ButtonClick"),
             ["Tap1"] = Resources.Load<AudioClip>("AudioClip/SFX/Tap1"),
-            ["Tap2"] = Resources.Load<AudioClip>("AudioClip/SFX/Tap2")
+            ["Tap2"] = Resources.Load<AudioClip>("AudioClip/SFX/Tap2"),
+            ["Paper"] = Resources.Load<AudioClip>("AudioClip/SFX/Paper"),
+            ["PlacePlant"] = Resources.Load<AudioClip>("AudioClip/SFX/PlacePlant"),
+            ["PlaceZombie"] = Resources.Load<AudioClip>("AudioClip/SFX/PlaceZombie"),
+            ["PlaceInWater"] = Resources.Load<AudioClip>("AudioClip/SFX/PlaceInWater")
         };
         BGMs = new Dictionary<string, AudioClip>
         {
@@ -50,6 +54,10 @@ public class AudioManager : PersistentSingleton<AudioManager>
                 break;
         }
         PlayingBGM = name;
+    }
+    public void StopBGM()
+    {
+        if (BGMAudioSource.clip != null) BGMAudioSource.Stop();
     }
     public void PlaySFX(string name)
     {

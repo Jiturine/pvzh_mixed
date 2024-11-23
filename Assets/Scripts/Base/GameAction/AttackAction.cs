@@ -6,7 +6,7 @@ using System;
 
 public class AttackAction : GameAction
 {
-    Entity entity;
+    private Entity entity;
     public AttackAction(Entity entity)
     {
         this.entity = entity;
@@ -17,12 +17,18 @@ public class AttackAction : GameAction
         Faction faction = (Faction)args[0];
         int lineIndex = args[1];
         int posID = args[2];
+        Debug.Log(faction + " " + lineIndex + " " + posID);
         entity = lines[lineIndex].GetSlot(faction).positions[posID].entity;
         time = 1f;
     }
     public override void Apply()
     {
-        if (entity == null || !entity.ReadyToAttack) return;
+        if (entity == null || !entity.ReadyToAttack)
+        {
+            ended = true;
+            return;
+        }
+        base.Apply();
         entity.Attack();
         ActionSequence.actionSequence.AddFirst(new SwitchPhaseAction());
     }

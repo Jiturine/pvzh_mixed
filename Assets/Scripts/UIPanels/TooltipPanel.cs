@@ -37,12 +37,13 @@ public class TooltipPanel : BasePanel
     {
         gameObject.SetActive(true);
         entityImage.sprite = SpriteManager.cardSprite[card.ID];
+        entityImage.SetNativeSize();
         tooltip_up.sprite = SpriteManager.GetTooltipSprites(card.faction)[0];
         tooltip_down.sprite = SpriteManager.GetTooltipSprites(card.faction)[1];
         text.text = $"{card.name}\n";
         if (card.tags.Any())
         {
-            text.text += "<color=grey>- ";
+            text.text += "<color=#001f86>- ";
             foreach (Tag tag in card.tags)
             {
                 text.text += CardDictionary.tagName[tag] + " ";
@@ -84,14 +85,14 @@ public class TooltipPanel : BasePanel
         gameObject.SetActive(true);
         tooltip_up.sprite = SpriteManager.GetTooltipSprites(entity.faction)[0];
         tooltip_down.sprite = SpriteManager.GetTooltipSprites(entity.faction)[1];
-        if (entity.abilities.Contains<Gravestone>(out var gravestone) && gravestone.outOfGrave == false)
+        entityImage.sprite = entity.spriteRenderer.sprite;
+        entityImage.SetNativeSize();
+        if (entity is GravestoneEntity)
         {
-            entityImage.sprite = null;
-            text.text = "???";
+            text.text = "墓碑";
         }
         else
         {
-            entityImage.sprite = SpriteManager.cardSprite[entity.ID];
             text.text = $"{entity.name}\n";
             if (entity.tags.Any())
             {

@@ -16,8 +16,11 @@ public class Flourish : TrickCard
     }
     public override void ApplyFor(Collider2D collider)
     {
+        CardTracker.Instance.Add(new CardTracker.CardApplyAction(this, collider, CardTracker.CardApplyAction.TargetType.Any));
         for (int i = 0; i < 2; i++)
+        {
             ActionSequence.actionSequence.AddFirst(new DrawCardAction(faction));
+        }
         base.ApplyFor(collider);
     }
 }

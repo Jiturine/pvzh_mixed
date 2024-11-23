@@ -4,7 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
+using Unity.VisualScripting;
 using UnityEngine;
+
 
 public class LobbyManager : PersistentSingleton<LobbyManager>
 {
@@ -22,6 +24,24 @@ public class LobbyManager : PersistentSingleton<LobbyManager>
         Heartbeat();
         PeriodicallyRefreshLobby();
     }
+    public async Task JoinLobbyAsync(string lobbyID)
+    {
+        try
+        {
+            currentLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyID);
+            if (currentLobby != null)
+            {
+                string joinCode = currentLobby.Data[JoinCodeKey].Value;
+                await RelayManager.Instance.JoinRelayAsync(joinCode);
+            }
+        }
+        catch (Exception e)
+        {
+            var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+            messageBoxPanel.ShowMessage($"连接错误：{e}", 3f);
+            Debug.Log(e);
+        }
+    }
     public async Task QuickJoinLobbyAsync()
     {
         try
@@ -36,6 +56,8 @@ public class LobbyManager : PersistentSingleton<LobbyManager>
         }
         catch (Exception e)
         {
+            var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+            messageBoxPanel.ShowMessage($"连接错误：{e}", 3f);
             Debug.Log(e);
         }
     }
@@ -79,6 +101,8 @@ public class LobbyManager : PersistentSingleton<LobbyManager>
             }
             catch (Exception e)
             {
+                var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+                messageBoxPanel.ShowMessage($"连接错误：{e}", 3f);
                 Debug.Log(e);
             }
         }

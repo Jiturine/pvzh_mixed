@@ -168,6 +168,7 @@ public class UIManager
             //加载界面
             panel = GameObject.Instantiate(panelPrefab, UIRoot, false).GetComponent<BasePanel>();
             ExistPanels.Add(panel);
+            panel.active = true;
         }
     }
     public T GetPanel<T>() where T : BasePanel
@@ -177,7 +178,11 @@ public class UIManager
         {
             return panel;
         }
-        else return null;
+        else
+        {
+            Debug.LogError("未找到面板");
+            return null;
+        }
     }
     public void PlayButtonClickSFX()
     {

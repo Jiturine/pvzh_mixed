@@ -5,6 +5,7 @@ using static Game;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static GameManager;
+using System.Security.Cryptography;
 
 public class SumoWrestler : Entity
 {
@@ -13,53 +14,62 @@ public class SumoWrestler : Entity
     {
         if (Game.GetOpponentEntities(faction).Any())
         {
+            if (gameMode == GameMode.Online)
+            {
+                ActionSequence.Lock();
+            }
             if (faction == myHero.faction)
             {
                 Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
                 var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
                 messageBoxPanel.ShowMessage("移动一株植物", pos);
-                OnUpdate += UpdateDetect;
-            }
-            else
-            {
-                if (gameMode == GameMode.Offline)
+                foreach (var position in Game.GetOpponentPositions(faction))
                 {
-                    Timer.Register(1f, () =>
-                {
-                    AIApplicableColliders.Shuffle();
-                    foreach (Collider2D collider in AIApplicableColliders)
+                    if (position.entity != null)
                     {
-                        Slot slot = collider.GetComponentInParent<Slot>();
-                        if (slot.GetEntity(collider) != null)
-                        {
-                            selectedEntity = slot.GetEntity(collider);
-                            break;
-                        }
+                        position.entity.ShowApplicableEntity();
                     }
-                    AIApplicableColliders.Shuffle();
-                    foreach (Collider2D collider in AIApplicableColliders)
-                    {
-                        if (selectedEntity.IsAbleToMoveTo(collider))
-                        {
-                            ActionSequence.actionSequence.AddFirst(new MoveAction(selectedEntity, collider));
-                            selectedEntity = null;
-                            break;
-                        }
-                    }
-                }, useRealTime: true);
                 }
+                OnUpdate += MyUpdateDetect;
+            }
+            else if (gameMode == GameMode.Offline) //AI逻辑
+            {
+                Timer.Register(1f, () =>
+            {
+                AIApplicableColliders.Shuffle();
+                foreach (Collider2D collider in AIApplicableColliders)
+                {
+                    Position pos = collider.GetComponent<Position>();
+                    if (pos.entity != null)
+                    {
+                        selectedEntity = pos.entity;
+                        break;
+                    }
+                }
+                AIApplicableColliders.Shuffle();
+                foreach (Collider2D collider in AIApplicableColliders)
+                {
+                    if (selectedEntity.IsAbleToMoveTo(collider))
+                    {
+                        ActionSequence.actionSequence.AddFirst(new MoveAction(selectedEntity, collider));
+                        selectedEntity = null;
+                        break;
+                    }
+                }
+            });
             }
         }
     }
-    public void UpdateDetect()
+    public void MyUpdateDetect()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Vector2 mousePosition = Input.mousePosition.TranslateScreenToWorld();
             Collider2D[] hitColliders = Physics2D.OverlapPointAll(mousePosition);
+            if (hitColliders == null) return;
             foreach (var collider in hitColliders)
             {
-                if (collider != null && collider.CompareTag("Pos"))
+                if (collider.CompareTag("Pos"))
                 {
                     Position pos = collider.GetComponent<Position>();
                     if (pos.faction == enemyHero.faction)
@@ -73,17 +83,33 @@ public class SumoWrestler : Entity
                                 Vector3 targetPos = Camera.main.WorldToScreenPoint(transform.position);
                                 var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
                                 messageBoxPanel.ShowMessage("选择目标位置", targetPos);
+                                foreach (var position in Game.GetOpponentPositions(faction))
+                                {
+                                    if (position.entity != null)
+                                    {
+                                        position.entity.HideApplicableEntity();
+                                    }
+                                    if (selectedEntity.IsAbleToMoveTo(position.collider))
+                                    {
+                                        position.ShowApplicablePositon();
+                                    }
+                                }
                             }
                         }
                         else
                         {
                             if (selectedEntity.IsAbleToMoveTo(collider))
                             {
-                                ActionSequence.actionSequence.AddFirst(new MoveAction(selectedEntity, collider));
-                                OnUpdate -= UpdateDetect;
+                                ActionSequence.AddInstantAction(new MoveAction(selectedEntity, collider));
+                                OnUpdate -= MyUpdateDetect;
+                                foreach (var position in Game.GetOpponentPositions(faction))
+                                {
+                                    position.HideApplicablePosition();
+                                }
                                 selectedEntity.spriteRenderer.color *= 2f;
                                 selectedEntity = null;
                                 UIManager.Instance.ClosePanel<MessageBoxPanel>();
+                                GameManager.Instance.ActionSequenceUnlockServerRpc();
                             }
                         }
                     }

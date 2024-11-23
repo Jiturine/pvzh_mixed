@@ -5,11 +5,7 @@ public class HibernatingBeary : Entity
     new void Start()
     {
         base.Start();
-        if (asleepSprite == null)
-        {
-            asleepSprite = Resources.Load<Sprite>("Sprites/CardSprites/HibernatingBeary/HibernatingBeary_sleep");
-        }
-        spriteRenderer.sprite = asleepSprite;
+        spriteRenderer.sprite = AsleepSprite;
         asleep = true;
     }
     public override void Place()
@@ -23,7 +19,7 @@ public class HibernatingBeary : Entity
         if (asleep)
         {
             asleep = false;
-            spriteRenderer.sprite = SpriteManager.cardSprite[ID];
+            spriteRenderer.sprite = AwakenSprite;
         }
     }
     public override void Exit()
@@ -32,5 +28,28 @@ public class HibernatingBeary : Entity
         OnTakeDamageEvent -= OnTakeDamage;
     }
     public static Sprite asleepSprite;
+    public static Sprite AsleepSprite
+    {
+        get
+        {
+            if (asleepSprite == null)
+            {
+                asleepSprite = Resources.Load<Sprite>("Sprites/Entity/HibernatingBeary/HibernatingBeary_asleep");
+            }
+            return asleepSprite;
+        }
+    }
+    public static Sprite awakenSprite;
+    public static Sprite AwakenSprite
+    {
+        get
+        {
+            if (awakenSprite == null)
+            {
+                awakenSprite = Resources.Load<Sprite>("Sprites/Entity/HibernatingBeary/HibernatingBeary");
+            }
+            return awakenSprite;
+        }
+    }
     public bool asleep;
 }

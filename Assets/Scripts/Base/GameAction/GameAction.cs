@@ -7,9 +7,16 @@ using UnityEngine;
 public class GameAction
 {
     public float time;
+    private float timer;
+    public bool ended;
     virtual public void Apply()
     {
-        Debug.LogError("未定义基类！");
+        timer = time;
+    }
+    virtual public void Update()
+    {
+        timer -= Time.deltaTime;
+        if (timer < 0) ended = true;
     }
     virtual public int[] ToTransportArgs()
     {
@@ -22,7 +29,8 @@ public class GameAction
         BattlecryAction,
         DrawCardAction,
         EndTurnAction,
-        SwitchPhaseAction
+        SwitchPhaseAction,
+        MoveAction
     }
     static public Dictionary<Type, string> stringDict = new Dictionary<Type, string>()
     {
@@ -31,7 +39,8 @@ public class GameAction
         [Type.BattlecryAction] = "BattlecryAction",
         [Type.DrawCardAction] = "DrawCardAction",
         [Type.EndTurnAction] = "EndTurnAction",
-        [Type.SwitchPhaseAction] = "SwitchPhaseAction"
+        [Type.SwitchPhaseAction] = "SwitchPhaseAction",
+        [Type.MoveAction] = "MoveAction",
     };
     static public Dictionary<string, Type> typeDict = new Dictionary<string, Type>()
     {
@@ -40,6 +49,7 @@ public class GameAction
         ["BattlecryAction"] = Type.BattlecryAction,
         ["DrawCardAction"] = Type.DrawCardAction,
         ["EndTurnAction"] = Type.EndTurnAction,
-        ["SwitchPhaseAction"] = Type.SwitchPhaseAction
+        ["SwitchPhaseAction"] = Type.SwitchPhaseAction,
+        ["MoveAction"] = Type.MoveAction
     };
 }

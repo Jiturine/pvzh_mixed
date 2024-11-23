@@ -21,6 +21,7 @@ public class DrawCardAction : GameAction
     }
     public override void Apply()
     {
+        base.Apply();
         GameManager.Instance.GetHandCards(faction).DrawFrom(GameManager.Instance.GetDeck(faction), randomSeed);
     }
     public override int[] ToTransportArgs()

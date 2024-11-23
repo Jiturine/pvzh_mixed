@@ -26,7 +26,12 @@ public class MoveAction : GameAction
     }
     public override void Apply()
     {
-        if (entity == null) return;
+        if (entity == null)
+        {
+            ended = true;
+            return;
+        }
+        base.Apply();
         entity.MoveTo(collider);
         GameManager.Instance.OnMoveEntityComplete();
     }

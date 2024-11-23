@@ -65,11 +65,11 @@ public class Slot : MonoBehaviour
     {
         if (FirstEntity == entity)
         {
-            return 1;
+            return 0;
         }
         else if (SecondEntity == entity)
         {
-            return 2;
+            return 1;
         }
         else
         {

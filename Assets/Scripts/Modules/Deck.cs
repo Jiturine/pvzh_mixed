@@ -22,6 +22,7 @@ public class Deck : MonoBehaviour
     {
         foreach (Card card in cardList)
         {
+            card.Count++;
             Destroy(card.gameObject);
         }
         cardList.Clear();

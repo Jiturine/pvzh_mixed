@@ -9,5 +9,7 @@ public class HelpSceneManager : MonoBehaviour
         UIManager.Instance.ExistPanels.Clear();
         UIManager.Instance.OpenPanel<HelpPanel>();
         UIManager.Instance.OpenPanel<MaskPanel>();
+        AudioManager.Instance.StopBGM();
+        AudioManager.Instance.PlaySFX("Paper");
     }
 }

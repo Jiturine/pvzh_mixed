@@ -5,23 +5,8 @@ using static Game;
 using UnityEngine;
 using static GameManager;
 
-public class EnemyAI : MonoBehaviour
+public class EnemyAI : Singleton<EnemyAI>
 {
-    public static EnemyAI Instance
-    {
-        get; set;
-    }
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
     void Start()
     {
         hasApplicableCard = true;
@@ -35,9 +20,10 @@ public class EnemyAI : MonoBehaviour
             {
                 cooldown = true;
                 Timer.Register(2f, () =>
-            {
-                decidingAction = true;
-            });
+                {
+                    if (Game.State is EnemyTurnState) decidingAction = true;
+                    else cooldown = false;
+                });
             }
             if (decidingAction)
             {
@@ -83,7 +69,7 @@ public class EnemyAI : MonoBehaviour
             {
                 decidingAction = false;
                 cooldown = false;
-                GameManager.Instance.EndTurn(enemyHero.faction);
+                ActionSequence.AddAction(new EndTurnAction(enemyHero.faction));
             }
             else
             {

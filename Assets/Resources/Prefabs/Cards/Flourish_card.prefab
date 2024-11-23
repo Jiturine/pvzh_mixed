@@ -16,6 +16,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Flourish_card
       objectReference: {fileID: 0}
+    - target: {fileID: 7356539803813267128, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8032714371578438439, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
+      propertyPath: m_text
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -26,19 +34,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_SizeDelta.x
@@ -122,17 +130,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 372e529ade53a9845b20f07e9ad2df1e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  className: 
   name: "\u679D\u7E41\u53F6\u8302"
   faction: 0
   tags: 01000000
   location: 0
   isSelectable: 0
-  count: 0
   cost: 3
   ID: 10009
   isSelected: 0
   content: {fileID: 0}
   costUI: {fileID: 0}
   animator: {fileID: 0}
+  cardCountText: {fileID: 0}
   needToWait: 0
-  AIApplicableColliders: []

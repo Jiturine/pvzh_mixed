@@ -66,8 +66,8 @@ public class ColliderManager : MonoBehaviour
                 colliders.Add(200 + i * 10 + 2, enemySecondCollider);
                 colliderID.Add(enemySecondCollider, 200 + i * 10 + 2);
             }
-            colliders.Add(300 + i, line.lineCollider);
-            colliderID.Add(line.lineCollider, 300 + i);
+            colliders.Add(300 + i * 10, line.lineCollider);
+            colliderID.Add(line.lineCollider, 300 + i * 10);
         }
     }
     static public Dictionary<int, Collider2D> colliders;

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using static Game;
 
 public class Gravestone : Ability
 {
@@ -16,23 +18,21 @@ public class Gravestone : Ability
     public override void SetEntity(Entity entity)
     {
         this.entity = entity;
-        entity.atkRenderer.HideAtk();
-        entity.healthRenderer.HideHealth();
-        entity.spriteRenderer.sprite = SpriteManager.gravestoneSprites[Random.Range(0, 10)];
-        GameManager.AddTurnStartEvent(entity.faction, GetOutOfGrave);
     }
     public override void SetTempEntity(Entity entity)
     {
         this.entity = entity;
     }
-    public void GetOutOfGrave()
+    static public GameObject gravestoneEntityPrefab;
+    static public GameObject GravestoneEntityPrefab
     {
-        entity.atkRenderer.ShowAtk();
-        entity.healthRenderer.ShowHealth();
-        entity.spriteRenderer.sprite = SpriteManager.cardSprite[entity.ID];
-        ActionSequence.AddAction(new BattlecryAction(entity));
-        GameManager.RemoveTurnStartEvent(entity.faction, GetOutOfGrave);
-        outOfGrave = true;
+        get
+        {
+            if (gravestoneEntityPrefab == null)
+            {
+                gravestoneEntityPrefab = Resources.Load<GameObject>("Prefabs/Entities/GravestoneEntity");
+            }
+            return gravestoneEntityPrefab;
+        }
     }
-    public bool outOfGrave;
 }

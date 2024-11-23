@@ -16,6 +16,7 @@ public class SpikeweedCard : EnvironmentCard
         Environment environment = line.AddComponent<Spikeweed>();
         environment.lineIndex = line.index;
         environment.ID = ID;
+        CardTracker.Instance.Add(new CardTracker.CardApplyAction(this, collider, CardTracker.CardApplyAction.TargetType.Position));
         base.ApplyFor(collider);
     }
 }

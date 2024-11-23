@@ -4,11 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using static Game;
 using Unity.Netcode;
-using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
-using System.Security;
 
 public class GameManager : NetworkBehaviour
 {
@@ -25,21 +23,6 @@ public class GameManager : NetworkBehaviour
             Destroy(gameObject);
         }
     }
-    void Start()
-    {
-        NetworkManager.OnClientConnectedCallback += (id) =>
-        {
-            Debug.Log("A new client connected, id = " + id);
-        };
-        NetworkManager.OnClientDisconnectCallback += (id) =>
-        {
-            Debug.Log("A new client disconnected, id = " + id);
-        };
-        NetworkManager.OnServerStarted += () =>
-        {
-            Debug.Log("Server Start!");
-        };
-    }
     void Update()
     {
         if (gameState == GameState.GamePlay)
@@ -54,13 +37,16 @@ public class GameManager : NetworkBehaviour
             {
                 CheckDieEntity();
             }
-            if (turnStateMachine.currentState is DrawCardState && ActionSequence.Empty())
+            if (ActionSequence.Empty())
             {
-                SwitchPhase();
-            }
-            else if (Game.State is EndTurnState)
-            {
-                turnStateMachine.SwitchState<DrawCardState>();
+                if (turnStateMachine.currentState is DrawCardState drawCardState && drawCardState.ended)
+                {
+                    SwitchPhase();
+                }
+                else if (Game.State is EndTurnState endTurnState && endTurnState.ended)
+                {
+                    turnStateMachine.SwitchState<DrawCardState>();
+                }
             }
         }
     }
@@ -79,7 +65,7 @@ public class GameManager : NetworkBehaviour
         }
         else if (Game.State is MyTurnState)
         {
-            if (enemyHero.endTurn)
+            if (enemyHero.EndTurn)
             {
                 turnStateMachine.SwitchState<MyTurnState>();
             }
@@ -91,7 +77,7 @@ public class GameManager : NetworkBehaviour
         }
         else if (Game.State is EnemyTurnState)
         {
-            if (myHero.endTurn)
+            if (myHero.EndTurn)
             {
                 turnStateMachine.SwitchState<EnemyTurnState>();
             }
@@ -100,7 +86,6 @@ public class GameManager : NetworkBehaviour
                 turnStateMachine.SwitchState<MyTurnState>();
             }
         }
-        Debug.Log($"myhero.endturn: {myHero.endTurn} enenmyHero.endturn : {enemyHero.endTurn} turnState: {State.GetType()}");
     }
     public void OnStartOfflineBtnClick()
     {
@@ -112,7 +97,12 @@ public class GameManager : NetworkBehaviour
     public void OnStartGameBtnClick()
     {
         AudioManager.Instance.PlaySFX("ButtonClick");
-        if (gameMode == GameMode.Online)
+        if (myDeck.cardList.Count != 40)
+        {
+            var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+            messageBoxPanel.ShowMessage("牌数不符合要求！", 3f);
+        }
+        else if (gameMode == GameMode.Online)
         {
             if (IsHost && readyPlayerNumber == 2)
             {
@@ -125,32 +115,41 @@ public class GameManager : NetworkBehaviour
             StartGame();
         }
     }
-    public void OnGetReadyBtnClick()
+    public void OnToggleReadyBtnClick()
     {
-        AudioManager.Instance.PlaySFX("ButtonClick");
-        if (IsServer)
+        if (myDeck.cardList.Count != 40 && !isReady)
         {
-            GetReadyClientRpc();
+            var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+            messageBoxPanel.ShowMessage("牌数不符合要求！", 3f);
         }
         else
         {
-            GetReadyServerRpc();
+            isReady = !isReady;
+            if (IsServer)
+            {
+                ToggleReadyClientRpc(isReady);
+            }
+            else
+            {
+                ToggleReadyServerRpc(isReady);
+            }
         }
     }
     [ClientRpc]
-    private void GetReadyClientRpc()
+    private void ToggleReadyClientRpc(bool _isReady)
     {
-        readyPlayerNumber++;
+        if (_isReady) readyPlayerNumber++;
+        else readyPlayerNumber--;
     }
     [ServerRpc(RequireOwnership = false)]
-    private void GetReadyServerRpc()
+    private void ToggleReadyServerRpc(bool _isReady)
     {
-        GetReadyClientRpc();
+        ToggleReadyClientRpc(_isReady);
     }
     public void EndTurn(Faction faction)
     {
-        GetHero(faction).endTurn = true;
-        if (GetOpponentHero(faction).endTurn == false)
+        GetHero(faction).EndTurn = true;
+        if (GetOpponentHero(faction).EndTurn == false)
         {
             GetHero(faction).turnOrder = 0;
             GetOpponentHero(faction).turnOrder = 1;
@@ -301,26 +300,30 @@ public class GameManager : NetworkBehaviour
     }
     public void LoadSelectCardScene(SelectCardPanel selectCardPanel)
     {
+        CardLibrary.Init();
         myDeck = selectCardPanel.myDeck;
         if (gameMode == GameMode.Online)
         {
             if (IsHost)
             {
+                selectCardPanel.joinCodeText.text = $"邀请码:{RelayManager.Instance.joinCode}";
                 tempFaction = Faction.Plant;
                 CardLibrary.LoadPlant();
             }
             else
             {
+                selectCardPanel.joinCodeText.enabled = false;
                 tempFaction = Faction.Zombie;
                 CardLibrary.LoadZombie();
             }
         }
         else
         {
+            selectCardPanel.joinCodeText.enabled = false;
             tempFaction = Faction.Plant;
             CardLibrary.LoadPlant();
         }
-
+        isReady = false;
     }
     public void LoadBattleFieldScene(BattleFieldPanel battleFieldPanel, HandCardsPanel handCardsPanel)
     {
@@ -381,6 +384,18 @@ public class GameManager : NetworkBehaviour
         GameAction gameAction = System.Activator.CreateInstance(_type, args) as GameAction;
         ActionSequence.actionSequence.AddLast(gameAction);
     }
+    [ServerRpc(RequireOwnership = false)]
+    public void AddInstantActionServerRpc(GameAction.Type type, int[] args)
+    {
+        AddInstantActionClientRpc(type, args);
+    }
+    [ClientRpc]
+    public void AddInstantActionClientRpc(GameAction.Type type, int[] args)
+    {
+        Type _type = System.Type.GetType(GameAction.stringDict[type]);
+        GameAction gameAction = System.Activator.CreateInstance(_type, args) as GameAction;
+        ActionSequence.actionSequence.AddFirst(gameAction);
+    }
     [ServerRpc]
     private void InitRandomSeedServerRpc()
     {
@@ -410,6 +425,16 @@ public class GameManager : NetworkBehaviour
             myHero.turnOrder = (Random.value > 0.5f) ? 0 : 1;
         }
         decideTurnOrderComplete = true;
+    }
+    [ServerRpc(RequireOwnership = false)]
+    public void ActionSequenceUnlockServerRpc()
+    {
+        ActionSequenceUnlockClientRpc();
+    }
+    [ClientRpc]
+    public void ActionSequenceUnlockClientRpc()
+    {
+        ActionSequence.Unlock();
     }
     public void PlaceEntity(Entity entity, Collider2D collider)
     {
@@ -446,7 +471,10 @@ public class GameManager : NetworkBehaviour
             }
         }
         entity.Place();
-        OnPlaceEntityEvent?.Invoke(entity);
+        if (entity is not GravestoneEntity)
+        {
+            OnPlaceEntityEvent?.Invoke(entity);
+        }
     }
     public void CheckDieEntity()
     {
@@ -524,6 +552,17 @@ public class GameManager : NetworkBehaviour
     {
         OnMoveEntityCompleteEvent?.Invoke();
     }
+    [ServerRpc(RequireOwnership = false)]
+    public void SetNameServerRpc(bool isServer, string name)
+    {
+        SetNameClientRpc(isServer, name);
+    }
+    [ClientRpc]
+    public void SetNameClientRpc(bool isServer, string name)
+    {
+        if (isServer) hostName = name;
+        else clientName = name;
+    }
     public void Quit()
     {
 #if UNITY_EDITOR
@@ -586,6 +625,8 @@ public class GameManager : NetworkBehaviour
         }
     }
     static public int playingAnimationCounter;
-    static public bool hasDrawnCard;
+    static public bool isReady;
     static public Faction tempFaction;
+    static public string hostName;
+    static public string clientName;
 }

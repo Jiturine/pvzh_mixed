@@ -23,24 +23,6 @@ public class SceneLoader : NetworkBehaviour
             Destroy(gameObject);
         }
     }
-    // public IEnumerator LoadScene(string name)
-    // {
-    //     animator = GameObject.Find("Mask Image").GetComponent<Animator>();
-    //     animator.SetBool("FadeIn", false);
-    //     animator.SetBool("FadeOut", true);
-    //     AsyncOperation async = SceneManager.LoadSceneAsync(name);
-    //     async.allowSceneActivation = false;
-    //     yield return new WaitForSeconds(1f);
-    //     async.allowSceneActivation = true;
-    //     async.completed += OnLoadedScene;
-    // }
-    // private void OnLoadedScene(AsyncOperation async)
-    // {
-    //     animator = GameObject.Find("Mask Image").GetComponent<Animator>();
-    //     animator.SetBool("FadeOut", false);
-    //     animator.SetBool("FadeIn", true);
-    //     StopAllCoroutines();
-    // }
     public async void LoadSceneAsync(string name)
     {
         readyClientNumber = 0;

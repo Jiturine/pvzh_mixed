@@ -669,6 +669,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9bd5fc59265a23b4f800dfe6f052c5be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  joinCode: 
 --- !u!4 &1097364603
 Transform:
   m_ObjectHideFlags: 0
@@ -915,8 +916,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1998254334}
-  - component: {fileID: 1998254333}
   - component: {fileID: 1998254335}
+  - component: {fileID: 1998254333}
   m_Layer: 0
   m_Name: SceneLoader
   m_TagString: Untagged
@@ -936,7 +937,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 243242b5ebcdd0e4e813cd610b7d999a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  readyClientNumber: 0
+  ableToContinue: 0
 --- !u!4 &1998254334
 Transform:
   m_ObjectHideFlags: 0

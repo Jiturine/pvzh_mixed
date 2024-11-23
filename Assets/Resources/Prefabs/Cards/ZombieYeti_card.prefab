@@ -126,3 +126,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 153669e6e950bcd46a37b026197168a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  className: 
+  name: 
+  faction: 0
+  tags: 
+  location: 0
+  isSelectable: 0
+  count: 0
+  cost: 0
+  ID: 0
+  isSelected: 0
+  content: {fileID: 0}
+  costUI: {fileID: 0}
+  animator: {fileID: 0}
+  needToWait: 0
+  healthUI: {fileID: 0}
+  atkUI: {fileID: 0}
+  health: 0
+  maxHealth: 0
+  atk: 0
+  maxAtk: 0
+  curEntity: {fileID: 0}
+  createdEntity: {fileID: 0}

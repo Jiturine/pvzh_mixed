@@ -26,6 +26,7 @@ public class LocustSwarm : TrickCard
     }
     public override void ApplyFor(Collider2D collider)
     {
+        CardTracker.Instance.Add(new CardTracker.CardApplyAction(this, collider, CardTracker.CardApplyAction.TargetType.Entity));
         Position pos = collider.GetComponent<Position>();
         pos.entity.Die();
         base.ApplyFor(collider);

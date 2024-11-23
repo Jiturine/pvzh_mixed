@@ -3,8 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Services.Lobbies;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using static Game;
 
 public class HallPanel : BasePanel
 {
@@ -22,8 +25,9 @@ public class HallPanel : BasePanel
         createLobby.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
         createLobby.onClick.AddListener(UIManager.Instance.TogglePanel<CreateLobbyPanel>);
         joinLobby.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
+        joinLobby.onClick.AddListener(JoinLobbyAsync);
         quickJoin.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
-        quickJoin.onClick.AddListener(QuickJoin);
+        quickJoin.onClick.AddListener(QuickJoinLobbyAsync);
         cancel.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
         cancel.onClick.AddListener(UIManager.Instance.TogglePanel<HallPanel>);
         lobbyItemList = new List<LobbyItem>();
@@ -36,9 +40,26 @@ public class HallPanel : BasePanel
             FetchLobbiesAsync();
         }
     }
-    public async void QuickJoin()
+    public async void QuickJoinLobbyAsync()
     {
+        var waitingPanel = UIManager.Instance.TryOpenPanel<WaitingPanel>();
+        waitingPanel.SetMessage("正在尝试快速加入，请耐心等待");
         await LobbyManager.Instance.QuickJoinLobbyAsync();
+        gameMode = GameMode.Online;
+        gameState = GameState.SelectCard;
+        SceneManager.LoadScene("Select Card");
+        UIManager.Instance.ClosePanel<WaitingPanel>();
+    }
+
+    public async void JoinLobbyAsync()
+    {
+        var waitingPanel = UIManager.Instance.TryOpenPanel<WaitingPanel>();
+        waitingPanel.SetMessage("正在尝试加入房间，请耐心等待");
+        await LobbyManager.Instance.JoinLobbyAsync(selectedLobbyID);
+        gameMode = GameMode.Online;
+        gameState = GameState.SelectCard;
+        SceneManager.LoadScene("Select Card");
+        UIManager.Instance.ClosePanel<WaitingPanel>();
     }
 
     private async void FetchLobbiesAsync()
@@ -86,6 +107,8 @@ public class HallPanel : BasePanel
         }
         catch (LobbyServiceException e)
         {
+            var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+            messageBoxPanel.ShowMessage($"连接错误：{e}", 3f);
             Debug.LogError(e);
         }
     }

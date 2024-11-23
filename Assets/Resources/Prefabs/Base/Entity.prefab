@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 6973853856258140630}
   - component: {fileID: 902386310614050957}
   - component: {fileID: 3247520363028806211}
-  m_Layer: 4
+  m_Layer: 0
   m_Name: atkSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -116,7 +116,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5860820514672506627}
   - component: {fileID: 3832732442291705260}
-  m_Layer: 4
+  m_Layer: 0
   m_Name: applicableIndicator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -201,7 +201,7 @@ GameObject:
   - component: {fileID: 1551433721801726461}
   - component: {fileID: 4416267140536884956}
   - component: {fileID: 5414575581167617381}
-  m_Layer: 4
+  m_Layer: 0
   m_Name: healthText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -376,7 +376,7 @@ GameObject:
   - component: {fileID: 6778015710396369847}
   - component: {fileID: 671063505598512463}
   - component: {fileID: 8711503950983709014}
-  m_Layer: 4
+  m_Layer: 0
   m_Name: Entity
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -593,7 +593,7 @@ GameObject:
   - component: {fileID: 7221001393457572015}
   - component: {fileID: 8086525878982760099}
   - component: {fileID: 4454643776381362943}
-  m_Layer: 4
+  m_Layer: 0
   m_Name: healthSprite
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -699,7 +699,7 @@ GameObject:
   - component: {fileID: 2836519648694588724}
   - component: {fileID: 8808228122898489915}
   - component: {fileID: 59784831574667815}
-  m_Layer: 4
+  m_Layer: 0
   m_Name: atkText
   m_TagString: Untagged
   m_Icon: {fileID: 0}

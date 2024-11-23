@@ -10,18 +10,14 @@ public class CatLady : Entity
     {
         base.Place();
         increaseAtk = 0;
-        GameManager.OnApplyCardEvent += OnApplyCard;
+        GameManager.OnPlaceEntityEvent += OnPlaceEntity;
         GameManager.OnEndTurnEvent += OnEndTurn;
     }
-    void OnApplyCard(Card card)
+    void OnPlaceEntity(Entity entity)
     {
-        if (card.tags.Contains(Game.Tag.Pet))
+        if (entity == this) return;
+        if (entity.tags.Contains(Game.Tag.Pet))
         {
-            //如果是创建自身的卡，不加攻击力
-            if (card is EntityCard entityCard && entityCard.createdEntity == this)
-            {
-                return;
-            }
             Atk += 3;
             //每轮首次加攻击力时得以攻击
             if (increaseAtk == 0)
@@ -47,7 +43,7 @@ public class CatLady : Entity
     public override void Exit()
     {
         base.Exit();
-        GameManager.OnApplyCardEvent -= OnApplyCard;
+        GameManager.OnPlaceEntityEvent -= OnPlaceEntity;
         GameManager.OnEndTurnEvent -= OnEndTurn;
     }
     private int increaseAtk;

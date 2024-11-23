@@ -6,40 +6,22 @@ using UnityEngine;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
 
-public class CardLibrary : MonoBehaviour
+public class CardLibrary : Singleton<CardLibrary>
 {
     public Transform contentTransform;
-    private static CardLibrary _instance;
-    public static CardLibrary Instance
-    {
-        get; set;
-    }
-    void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
+    static public Dictionary<int, int> cardCountDict;
     static public List<Card> cardList;
+    static public void Init()
+    {
+        cardList = new List<Card>();
+        cardCountDict = new Dictionary<int, int>();
+        foreach (var kvp in CardDictionary.card)
+        {
+            cardCountDict.Add(kvp.Key, 4);
+        }
+    }
     static public void Add(int ID)
     {
-        if (cardList == null) cardList = new List<Card>();
         GameObject newCardObject = Instantiate(CardDictionary.card[ID], Instance.contentTransform);
         Card newCard = newCardObject.GetComponent<Card>();
         newCard.SetInfo();
@@ -66,7 +48,7 @@ public class CardLibrary : MonoBehaviour
     {
         foreach (Card card in cardList)
         {
-            if (card != null) Destroy(card.gameObject);
+            Destroy(card.gameObject);
         }
         cardList.Clear();
     }

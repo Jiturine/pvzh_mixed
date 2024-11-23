@@ -136,7 +136,6 @@ MonoBehaviour:
   costUI: {fileID: 0}
   animator: {fileID: 0}
   needToWait: 0
-  AIApplicableColliders: []
   healthUI: {fileID: 0}
   atkUI: {fileID: 0}
   health: 0

@@ -100,7 +100,7 @@
         "abilities": [
             "TeamUp"
         ],
-        "description": "身后的豌豆获得+2<sprite=3>",
+        "description": "身后的<color=#001f86>豌豆</color>获得+2<sprite=3>",
         "isEntity": true
     },
     "10009": {
@@ -232,7 +232,7 @@
         "health": 2,
         "atk": 2,
         "abilities": [],
-        "description": "打出豌豆时，使那株豌豆获得+2<sprite=3>/+2<sprite=2>",
+        "description": "打出<color=#001f86>豌豆</color>时，使那株<color=#001f86>豌豆</color>获得+2<sprite=3>/+2<sprite=2>",
         "isEntity": true
     },
     "20001": {
@@ -243,7 +243,7 @@
         ],
         "cost": 1,
         "health": 1,
-        "atk": 1,
+        "atk": 2,
         "abilities": [],
         "description": "",
         "isEntity": true
@@ -316,7 +316,7 @@
         "health": 4,
         "atk": 1,
         "abilities": [],
-        "description": "回合开始：所有运动员获得+1<sprite=3>/+1<sprite=2>",
+        "description": "回合开始：所有<color=#001f86>运动员</color>获得+1<sprite=3>/+1<sprite=2>",
         "isEntity": true
     },
     "20008": {
@@ -392,7 +392,7 @@
         "health": 2,
         "atk": 2,
         "abilities": [],
-        "description": "当你打出宠物时，所有宠物僵尸获得+1<sprite=3>",
+        "description": "当你打出<color=#001f86>宠物</color>时，所有<color=#001f86>宠物</color>僵尸获得+1<sprite=3>",
         "isEntity": true
     },
     "20014": {
@@ -405,7 +405,7 @@
         "health": 4,
         "atk": 0,
         "abilities": [],
-        "description": "当你打出宠物时，这个僵尸在本回合获得+3<sprite=3>，每回合首次通过此方式+<sprite=3>时，这个僵尸可以攻击",
+        "description": "当你打出<color=#001f86>宠物</color>僵尸时，这个僵尸在本回合获得+3<sprite=3>，每回合首次通过此方式+<sprite=3>时，这个僵尸可以攻击",
         "isEntity": true
     },
     "20015": {
@@ -420,7 +420,7 @@
         "abilities": [
             "Gravestone"
         ],
-        "description": "从墓碑中显现：使本条线上的所有植物获得-1<sprite=3>/-1<sprite=2>",
+        "description": "从墓碑中显现：使本条线上的所有植物获得 -1<sprite=3>/-1<sprite=2>",
         "isEntity": true
     },
     "20016": {

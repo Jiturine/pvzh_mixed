@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 using static Game;
 using Unity.Netcode;
+using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 
 public class EndTurnAction : GameAction
 {
@@ -18,6 +19,7 @@ public class EndTurnAction : GameAction
     }
     public override void Apply()
     {
+        base.Apply();
         GameManager.Instance.EndTurn(faction);
     }
     public override int[] ToTransportArgs()

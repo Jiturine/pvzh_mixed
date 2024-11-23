@@ -15,6 +15,8 @@ public class BattleFieldPanel : BasePanel
         endTurnButton.onClick.AddListener(EndTurn);
         optionsButton.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
         optionsButton.onClick.AddListener(UIManager.Instance.TogglePanel<OptionsPanel>);
+        cardTrackerButton.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
+        cardTrackerButton.onClick.AddListener(UIManager.Instance.TogglePanel<CardTrackerPanel>);
         if (GameManager.tempFaction == Faction.Plant)
         {
             myTotalPointImage.sprite = SpriteManager.plantCostSprite;
@@ -44,6 +46,8 @@ public class BattleFieldPanel : BasePanel
     public Image myTotalPointImage;
     public Image enemyTotalPointImage;
     public TextMeshProUGUI currentTurnText;
+    public TextMeshProUGUI myHeroEndTurnText;
+    public TextMeshProUGUI enemyHeroEndTurnText;
     public Hero myHero;
     public Hero enemyHero;
     public Deck myDeck;
@@ -51,4 +55,5 @@ public class BattleFieldPanel : BasePanel
     public HandCards enemyHandCards;
     public Button endTurnButton;
     public Button optionsButton;
+    public Button cardTrackerButton;
 }

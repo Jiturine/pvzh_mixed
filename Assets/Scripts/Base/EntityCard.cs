@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using static Game;
-using Unity.VisualScripting;
-using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static GameManager;
-using UnityEditor.Timeline;
 
 public class EntityCard : Card
 {
@@ -165,7 +162,17 @@ public class EntityCard : Card
     }
     public override void ApplyFor(Collider2D collider)
     {
-        createdEntity = CreateEntity(collider.transform);
+        if (abilities.Contains<Gravestone>())
+        {
+            var gravestoneEntity = Instantiate(Gravestone.GravestoneEntityPrefab, collider.transform.position, Quaternion.identity, collider.transform).GetComponent<GravestoneEntity>();
+            gravestoneEntity.SetInfo(this, collider);
+            createdEntity = gravestoneEntity;
+        }
+        else
+        {
+            createdEntity = CreateEntity(collider.transform);
+            CardTracker.Instance.Add(new CardTracker.CardApplyAction(this, collider, CardTracker.CardApplyAction.TargetType.Position));
+        }
         GameManager.Instance.PlaceEntity(createdEntity, collider);
         base.ApplyFor(collider);
     }
@@ -194,21 +201,11 @@ public class EntityCard : Card
     }
     public override void OnPointerClick(PointerEventData eventData)
     {
-        if ((location == Location.InCardLibrary) && isSelectable)
+        base.OnPointerClick(eventData);
+        if (location == Location.InHandCards && SelectedCard != this)
         {
-            myDeck.Add(this.ID);
-        }
-        else if (location == Location.InDeck)
-        {
-            myDeck.Remove(this);
-        }
-        else if (location == Location.InHandCards)
-        {
-            if (SelectedCard != this)
-            {
-                SelectedCard = this;
-                CreateTempEntity(eventData.position);
-            }
+            SelectedCard = this;
+            CreateTempEntity(eventData.position);
         }
     }
     public override void Select()

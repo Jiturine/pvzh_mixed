@@ -4,6 +4,7 @@ using static Game;
 using UnityEngine;
 using UnityEngine.TextCore;
 using static GameManager;
+using Unity.VisualScripting;
 
 public class SpriteManager
 {
@@ -22,6 +23,8 @@ public class SpriteManager
     static public Sprite zombieHandCardsSprite;
     static public Sprite plantCostSprite;
     static public Sprite zombieCostSprite;
+    static public Sprite plantIcon;
+    static public Sprite zombieIcon;
     static public Dictionary<int, Sprite> abilityIcons;
     static public Sprite defaultAtkIcon;
     static public Sprite defaultHealthIcon;
@@ -62,6 +65,8 @@ public class SpriteManager
             plantHeroShieldSprites[i] = Resources.Load<Sprite>($"Sprites/shield/plant_shield/plant_shield_{i}");
             zombieHeroShieldSprites[i] = Resources.Load<Sprite>($"Sprites/shield/zombie_shield/zombie_shield_{i}");
         }
+        plantIcon = Resources.Load<Sprite>("Sprites/Base/plant_icon");
+        zombieIcon = Resources.Load<Sprite>("Sprites/Base/zombie_icon");
     }
     static public Sprite[] GetTooltipSprites(Faction faction)
     {

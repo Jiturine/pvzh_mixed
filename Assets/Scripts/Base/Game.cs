@@ -4,6 +4,11 @@ using System.Linq;
 using UnityEngine;
 public class Game
 {
+    [RuntimeInitializeOnLoadMethod]
+    static private void Init()
+    {
+        turnStateMachine = new TurnStateMachine();
+    }
     public enum GameState
     {
         MainMenu,
@@ -46,11 +51,7 @@ public class Game
     static public HandCards enemyHandCards;
     static public int currentTurn;
     static public readonly int lineCount = 5;
-    [RuntimeInitializeOnLoadMethod]
-    static private void Init()
-    {
-        turnStateMachine = new TurnStateMachine();
-    }
+
     static public List<Entity> AllEntities
     {
         get
@@ -120,6 +121,16 @@ public class Game
         foreach (Line line in lines)
         {
             Slot slot = line.GetSlot(faction);
+            colliders.AddRange(slot.positions);
+        }
+        return colliders;
+    }
+    static public List<Position> GetOpponentPositions(Faction faction)
+    {
+        List<Position> colliders = new List<Position>();
+        foreach (Line line in lines)
+        {
+            Slot slot = line.GetOpponentSlot(faction);
             colliders.AddRange(slot.positions);
         }
         return colliders;

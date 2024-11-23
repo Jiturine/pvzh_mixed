@@ -6,6 +6,7 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class RelayManager : PersistentSingleton<RelayManager>
@@ -24,8 +25,11 @@ public class RelayManager : PersistentSingleton<RelayManager>
         catch (RelayServiceException e)
         {
             Debug.Log(e);
+            var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+            messageBoxPanel.ShowMessage($"连接错误：{e}", 3f);
         }
         Debug.Log("Join Code: " + joinCode);
+        this.joinCode = joinCode;
         return joinCode;
     }
     public async Task JoinRelayAsync(string joinCode)
@@ -37,10 +41,14 @@ public class RelayManager : PersistentSingleton<RelayManager>
             RelayServerData relayServerData = new RelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartClient();
+            GameManager.clientName = UserManager.Instance.currentUserInfo.name;
         }
         catch (RelayServiceException e)
         {
+            var messageBoxPanel = UIManager.Instance.TryOpenPanel<MessageBoxPanel>();
+            messageBoxPanel.ShowMessage($"连接错误：{e}", 3f);
             Debug.Log(e);
         }
     }
+    public string joinCode;
 }

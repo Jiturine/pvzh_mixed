@@ -73,7 +73,6 @@ public class SwitchUserPanel : BasePanel
     }
     public void Apply()
     {
-        Debug.Log(currentUserName + " " + UserManager.Instance.currentUserInfo.name);
         if (currentUserName != UserManager.Instance.currentUserInfo.name)
         {
             if (currentUserName == "")

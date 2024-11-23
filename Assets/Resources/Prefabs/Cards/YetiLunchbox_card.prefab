@@ -14,7 +14,7 @@ PrefabInstance:
       objectReference: {fileID: 21300000, guid: b64c121fd9cc8cf4e8f367417a20f044, type: 3}
     - target: {fileID: 3221763009581769055, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_Name
-      value: YetiLunchbox
+      value: YetiLunchbox_card
       objectReference: {fileID: 0}
     - target: {fileID: 7610033859257963340, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_Sprite
@@ -140,4 +140,3 @@ MonoBehaviour:
   costUI: {fileID: 0}
   animator: {fileID: 0}
   needToWait: 0
-  AIApplicableColliders: []

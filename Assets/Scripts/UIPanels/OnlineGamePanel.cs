@@ -25,19 +25,23 @@ public class OnlineGamePanel : BasePanel
     }
     public async void CreateGame()
     {
-        // string joinCode = await RelayManager.Instance.CreateRelayAsync();
-        // Debug.Log($"Join Code: {joinCode}");
-        NetworkManager.Singleton.StartHost();
+        var waitingPanel = UIManager.Instance.TryOpenPanel<WaitingPanel>();
+        waitingPanel.SetMessage("正在创建对局，请耐心等待");
+        string joinCode = await RelayManager.Instance.CreateRelayAsync();
+        UIManager.Instance.ClosePanel<WaitingPanel>();
+        Debug.Log($"Join Code: {joinCode}");
         gameMode = GameMode.Online;
         gameState = GameState.SelectCard;
         SceneManager.LoadScene("Select Card");
     }
     public async void JoinGame()
     {
-        // string joinCode = inputField.text;
-        // if (joinCode == "") return;
-        // await RelayManager.Instance.JoinRelayAsync(joinCode);
-        NetworkManager.Singleton.StartClient();
+        string joinCode = inputField.text;
+        if (joinCode == "") return;
+        var waitingPanel = UIManager.Instance.TryOpenPanel<WaitingPanel>();
+        waitingPanel.SetMessage("正在加入对局，请耐心等待");
+        await RelayManager.Instance.JoinRelayAsync(joinCode);
+        UIManager.Instance.ClosePanel<WaitingPanel>();
         gameMode = GameMode.Online;
         gameState = GameState.SelectCard;
         SceneManager.LoadScene("Select Card");

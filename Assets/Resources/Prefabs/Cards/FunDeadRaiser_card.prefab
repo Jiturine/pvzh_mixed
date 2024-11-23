@@ -30,19 +30,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 8954674942391754772, guid: c1e45591365a215449fa62eb0fe96fb6, type: 3}
       propertyPath: m_SizeDelta.x
@@ -126,6 +126,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5a5fc4b719bce9449c32dd9aec20bae, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  className: 
   name: "\u4F17\u7B79\u590D\u751F"
   faction: 1
   tags: 
@@ -139,4 +140,3 @@ MonoBehaviour:
   costUI: {fileID: 0}
   animator: {fileID: 0}
   needToWait: 0
-  AIApplicableColliders: []

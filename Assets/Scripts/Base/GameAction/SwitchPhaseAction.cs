@@ -14,6 +14,7 @@ public class SwitchPhaseAction : GameAction
     }
     public override void Apply()
     {
+        base.Apply();
         GameManager.Instance.SwitchPhase();
     }
 }

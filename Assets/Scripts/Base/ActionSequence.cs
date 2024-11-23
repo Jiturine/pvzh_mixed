@@ -22,38 +22,51 @@ public class ActionSequence
             actionSequence.AddLast(gameAction);
         }
     }
+    static public void AddInstantAction(GameAction gameAction)
+    {
+        if (gameMode == Game.GameMode.Online)
+        {
+            GameManager.Instance.AddInstantActionServerRpc(GameAction.typeDict[gameAction.GetType().ToString()], gameAction.ToTransportArgs());
+        }
+        else
+        {
+            actionSequence.AddFirst(gameAction);
+        }
+    }
     static public void ApplyAction()
     {
-        //debug
-        string res = "";
-        foreach (GameAction action in actionSequence)
-        {
-            res += action.GetType().ToString() + " ";
-        }
-        Debug.Log(res);
-        var gameAction = actionSequence.First.Value;
-        Timer.Register(gameAction.time - 0.05f, () =>
-        {
-            actionSequence.Remove(gameAction);
-        });
-        gameAction.Apply();
-        coolTimer = gameAction.time;
+        currentAction = actionSequence.First.Value;
+        actionSequence.Remove(currentAction);
+        currentAction.Apply();
     }
     static public bool HasAction<T>() where T : GameAction
     {
-        return actionSequence.Any(action => action is T);
+        return actionSequence.Any(action => action is T) || currentAction is T;
     }
     static public bool Empty()
     {
-        return actionSequence.Count == 0;
+        return !actionSequence.Any() && currentAction == null;
     }
     static public void Update()
     {
-        coolTimer -= Time.deltaTime;
-        if (actionSequence.Any() && coolTimer < 0)
+        if (!locked)
         {
-            ApplyAction();
+            if (currentAction != null)
+            {
+                currentAction.Update();
+                if (currentAction.ended)
+                {
+                    currentAction = null;
+                }
+            }
+            if (currentAction == null && actionSequence.Any())
+            {
+                ApplyAction();
+            }
         }
     }
-    static public float coolTimer;
+    static public void Lock() => locked = true;
+    static public void Unlock() => locked = false;
+    static public GameAction currentAction;
+    static public bool locked;
 }

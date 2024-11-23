@@ -1722,19 +1722,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4146034306546175779, guid: 71dea0fd7f322b84cb3829677bed5cba, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4146034306546175779, guid: 71dea0fd7f322b84cb3829677bed5cba, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4146034306546175779, guid: 71dea0fd7f322b84cb3829677bed5cba, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4146034306546175779, guid: 71dea0fd7f322b84cb3829677bed5cba, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4146034306546175779, guid: 71dea0fd7f322b84cb3829677bed5cba, type: 3}
       propertyPath: m_SizeDelta.x
@@ -1872,3 +1872,4 @@ MonoBehaviour:
   cancel: {fileID: 7179723314097909175}
   lobbyItemList: []
   lobbyItemPrefab: {fileID: 7227585760139267633, guid: 858083e076742db4cb34d9426b7dc4b2, type: 3}
+  selectedLobbyID: 

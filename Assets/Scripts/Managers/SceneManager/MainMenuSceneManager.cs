@@ -9,24 +9,12 @@ using UnityEngine.XR;
 
 public class MainMenuSceneManager : NetworkBehaviour
 {
-
-    // Start is called before the first frame update
     void Start()
     {
         UIManager.Instance.ExistPanels.Clear();
         UIManager.Instance.OpenPanel<MainMenuPanel>();
-        if (AudioManager.Instance.PlayingBGM != "PVZHmain") AudioManager.Instance.PlayBGM("PVZHmain");
+        AudioManager.Instance.PlayBGM("PVZHmain");
         GameManager.Instance.LoadMainMenuScene();
-        // inputIPField = GameObject.Find("Input IP").GetComponent<InputField>();
-        // inputPortField = GameObject.Find("Input Port").GetComponent<InputField>();
-        // startOfflineButton = GameObject.Find("Start Offline").GetComponent<Button>();
-        // startHostButton = GameObject.Find("Start Host").GetComponent<Button>();
-        // startClientButton = GameObject.Find("Start Client").GetComponent<Button>();
-        // inputIPField.onEndEdit.AddListener(GetInputIP);
-        // inputPortField.onEndEdit.AddListener(GetInputPort);
-        // startOfflineButton.onClick.AddListener(GameManager.Instance.OnStartOfflineBtnClick);
-        // startHostButton.onClick.AddListener(GameManager.Instance.OnStartHostBtnClick);
-        // startClientButton.onClick.AddListener(GameManager.Instance.OnStartClientBtnClick);
         Debug.Log(GetIP());
     }
     void GetInputIP(string userInput)

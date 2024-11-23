@@ -14,16 +14,41 @@ public class Hero : MonoBehaviour
         maxHealth = 20;
         Shield = 0;
         ShieldCount = 3;
-        endTurn = false;
+        EndTurn = false;
         totalPoint = 1;
     }
     void Update()
     {
         healthUI.healthText.text = health.ToString();
     }
-    public int TakeDamage(int damage)
+    public int TakeDamage(int damage, bool bullseye = false)
     {
-        if (Health >= damage)
+        if (!bullseye && ShieldCount > 0)
+        {
+            int increaseShield = Random.Range(1, 4);
+            if (increaseShield + Shield >= 10)
+            {
+                Shield = 0;
+                ShieldCount--;
+                return 0;
+            }
+            else
+            {
+                Shield += increaseShield;
+                if (Health >= damage)
+                {
+                    Health -= damage;
+                    return damage;
+                }
+                else
+                {
+                    int tempHP = Health;
+                    Health = 0;
+                    return tempHP;
+                }
+            }
+        }
+        else if (Health >= damage)
         {
             Health -= damage;
             return damage;
@@ -77,6 +102,23 @@ public class Hero : MonoBehaviour
     }
     public int totalPoint;
     [HideInInspector] public bool endTurn;
+    public bool EndTurn
+    {
+        get => endTurn;
+        set
+        {
+            endTurn = value;
+            var battleFieldPanel = UIManager.Instance.GetPanel<BattleFieldPanel>();
+            if (faction == myHero.faction)
+            {
+                battleFieldPanel.myHeroEndTurnText.enabled = endTurn;
+            }
+            else
+            {
+                battleFieldPanel.enemyHeroEndTurnText.enabled = endTurn;
+            }
+        }
+    }
     [HideInInspector] public int turnOrder;
     public HealthUI healthUI;
     public Image shieldImage;
@@ -88,7 +130,15 @@ public class Hero : MonoBehaviour
         set
         {
             shieldCount = value;
-            if (faction == Faction.Plant)
+            if (shieldCount == 0)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    smallShield[i].enabled = false;
+                }
+                shieldImage.enabled = false;
+            }
+            else if (faction == Faction.Plant)
             {
                 for (int i = 0; i < 3 - shieldCount; i++)
                 {

@@ -18,19 +18,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3361603153363060844, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
       propertyPath: m_AnchorMax.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3361603153363060844, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
       propertyPath: m_AnchorMax.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3361603153363060844, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
       propertyPath: m_AnchorMin.x
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3361603153363060844, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
       propertyPath: m_AnchorMin.y
-      value: 0
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3361603153363060844, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
       propertyPath: m_SizeDelta.x
@@ -88,6 +88,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3815702078573784768, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4438959347502435167, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
+      propertyPath: m_text
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6695565108214212557, guid: b80bf49a735718d41a8b923f3fef1baa, type: 3}
       propertyPath: ID
       value: 10007
@@ -130,14 +138,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b55a7027e6c4334ea25dd0b5bec69a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  className: 
   name: "\u5730\u523A\u9632\u533A"
   faction: 0
   tags: 
   location: 0
   isSelectable: 0
-  count: 0
   cost: 2
   ID: 10007
   isSelected: 0
   content: {fileID: 0}
   costUI: {fileID: 0}
+  animator: {fileID: 0}
+  cardCountText: {fileID: 0}
+  needToWait: 0
