@@ -13,7 +13,7 @@ public class OptionsPanel : BasePanel
         backButton.onClick.AddListener(UIManager.Instance.TogglePanel<OptionsPanel>);
         backButton.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
         backToMainMenuButton.onClick.AddListener(UIManager.Instance.PlayButtonClickSFX);
-        backToMainMenuButton.onClick.AddListener(BackToMainMenu);
+        backToMainMenuButton.onClick.AddListener(GameManager.Instance.OnEndGameMenuBtnClick);
         BGMVolumeSlider.onValueChanged.AddListener(SetBGMVolume);
         BGMVolumeSlider.value = AudioManager.Instance.BGMVolume;
         SFXVolumeSlider.onValueChanged.AddListener(SetSFXVolume);
@@ -48,10 +48,6 @@ public class OptionsPanel : BasePanel
     {
         Screen.fullScreen = value;
         UIManager.Instance.PlayButtonClickSFX();
-    }
-    public void BackToMainMenu()
-    {
-        SceneManager.LoadScene("Main Menu");
     }
     public Button backButton;
     public Button backToMainMenuButton;
